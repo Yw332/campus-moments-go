@@ -1,0 +1,46 @@
+module.exports = (users) => {
+  const express = require('express');
+  const router = express.Router();
+
+  // 用户注册
+  router.post('/register', (req, res) => {
+    const { username, password } = req.body;
+    
+    const existingUser = users.find(user => user.username === username);
+    if (existingUser) {
+      return res.json({ code: 400, message: '用户名已存在' });
+    }
+    
+    const newUser = {
+      id: users.length + 1,
+      username,
+      password,
+      createTime: new Date().toISOString()
+    };
+    
+    users.push(newUser);
+    res.json({ code: 200, message: '注册成功', data: { userId: newUser.id } });
+  });
+
+  // 用户登录
+  router.post('/login', (req, res) => {
+    const { username, password } = req.body;
+    
+    const user = users.find(u => u.username === username && u.password === password);
+    if (user) {
+      res.json({ 
+        code: 200, 
+        message: '登录成功', 
+        data: { 
+          userId: user.id,
+          username: user.username,
+          token: 'mock-token-' + user.id
+        }
+      });
+    } else {
+      res.json({ code: 401, message: '用户名或密码错误' });
+    }
+  });
+
+  return router;
+};
