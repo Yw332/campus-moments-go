@@ -8,7 +8,7 @@ module.exports = (users) => {
 
     const existingUser = users.find(user => user.username === username);
     if (existingUser) {
-      return res.json({ code: 400, message: '用户名已存在', data: null  });
+      return res.json({ code: 400, message: '用户名已存在', data: null });
     }
 
     const newUser = {
@@ -19,7 +19,13 @@ module.exports = (users) => {
     };
 
     users.push(newUser);
-    res.json({ code: 200, message: '注册成功', data: { userId: newUser.id } });
+    res.json({
+      code: 200,
+      message: '注册成功',
+      data: {
+        userId: newUser.id
+      }
+    });
   });
 
   const jwt = require('jsonwebtoken');
