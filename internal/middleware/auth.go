@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/Yw332/campus-moments-go/pkg/jwt"
+	"github.com/Yw332/campus-moments-go/pkg/token_blacklist"
 	"github.com/gin-gonic/gin"
 )
 
@@ -40,6 +41,18 @@ func AuthMiddleware() gin.HandlerFunc {
 			c.JSON(http.StatusUnauthorized, gin.H{
 				"code":    401,
 				"message": "token cannot be empty",
+				"data":    nil,
+			})
+			c.Abort()
+			return
+		}
+
+		// 检查Token是否在黑名单中（退出登录的Token）
+		blacklist := token_blacklist.GetInstance()
+		if blacklist.IsBlacklisted(token) {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"code":    401,
+				"message": "token has been revoked",
 				"data":    nil,
 			})
 			c.Abort()

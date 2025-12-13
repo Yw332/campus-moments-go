@@ -2,8 +2,12 @@ package handlers
 
 import (
 	"net/http"
+	"strings"
+	"time"
 
 	"github.com/Yw332/campus-moments-go/internal/service"
+	"github.com/Yw332/campus-moments-go/pkg/jwt"
+	"github.com/Yw332/campus-moments-go/pkg/token_blacklist"
 	"github.com/gin-gonic/gin"
 )
 
@@ -95,12 +99,26 @@ func Logout(c *gin.Context) {
 		return
 	}
 
-	// 这里可以实现token黑名单机制
-	// 目前简单返回成功
+	// 获取Token并添加到黑名单
+	auth := c.GetHeader("Authorization")
+	if auth != "" && strings.HasPrefix(auth, "Bearer ") {
+		token := strings.TrimPrefix(auth, "Bearer ")
+		
+		// 解析Token获取过期时间
+		if claims, err := jwt.ParseToken(token); err == nil {
+			blacklist := token_blacklist.GetInstance()
+			// 将Token添加到黑名单，直到其原定的过期时间
+			blacklist.AddToken(token, claims.ExpiresAt.Time)
+		}
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"code":    200,
 		"message": "退出成功",
-		"data":    userID,
+		"data": gin.H{
+			"userId":   userID,
+			"logoutAt": time.Now().Format("2006-01-02 15:04:05"),
+		},
 	})
 }
 
