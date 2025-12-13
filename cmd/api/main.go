@@ -36,8 +36,14 @@ func main() {
 	database.Init()
 	defer database.Close()
 
-	// 4. 自动迁移数据库表结构
-	models.AutoMigrate()
+	// 4. 检查数据库连接状态
+	if database.IsConnected() {
+		log.Println("✅ 数据库连接正常")
+		// 自动迁移数据库表结构
+		models.AutoMigrate()
+	} else {
+		log.Println("⚠️  数据库未连接，某些功能可能不可用")
+	}
 
 	// 5. 设置Gin模式
 	if config.IsProduction() {

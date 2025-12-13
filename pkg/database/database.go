@@ -1,8 +1,10 @@
 ﻿package database
 
 import (
+	"context"
 	"database/sql"
 	"log"
+	"time"
 
 	"github.com/Yw332/campus-moments-go/pkg/config"
 	"gorm.io/driver/mysql"
@@ -27,13 +29,22 @@ func Init() {
 	var err error
 	DB, err = sql.Open("mysql", cfg.DSN)
 	if err != nil {
-		log.Fatal("❌ 原生数据库连接失败:", err)
+		log.Printf("⚠️  数据库连接失败: %v", err)
+		log.Println("🚀 应用将在无数据库模式下启动")
+		return
 	}
 
-	// 测试原生连接
-	err = DB.Ping()
+	// 设置连接超时
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	// 测试原生连接（带超时）
+	DB.SetConnMaxLifetime(10 * time.Second)
+	err = DB.PingContext(ctx)
 	if err != nil {
-		log.Fatal("❌ 原生数据库连接测试失败:", err)
+		log.Printf("⚠️  数据库连接测试失败: %v", err)
+		log.Println("🚀 应用将在无数据库模式下启动")
+		return
 	}
 
 	// 初始化GORM连接
@@ -41,20 +52,25 @@ func Init() {
 		Logger: logger.Default.LogMode(logger.Silent), // 生产环境静默日志
 	})
 	if err != nil {
-		log.Fatal("❌ GORM数据库连接失败:", err)
+		log.Printf("⚠️  GORM数据库连接失败: %v", err)
+		log.Println("🚀 应用将在无数据库模式下启动")
+		return
 	}
 
 	// 配置连接池
 	sqlDB, err := GORM.DB()
 	if err != nil {
-		log.Fatal("❌ 获取GORM底层连接失败:", err)
+		log.Printf("⚠️  获取GORM底层连接失败: %v", err)
+		log.Println("🚀 应用将在无数据库模式下启动")
+		return
 	}
 
 	// 设置连接池参数
 	sqlDB.SetMaxOpenConns(cfg.MaxOpenConns)
 	sqlDB.SetMaxIdleConns(cfg.MaxIdleConns)
+	sqlDB.SetConnMaxLifetime(10 * time.Second)
 
-	log.Println("✅ 成功连接到云数据库")
+	log.Println("✅ 成功连接到数据库")
 	log.Printf("📊 连接池配置: 最大连接数=%d, 空闲连接数=%d", cfg.MaxOpenConns, cfg.MaxIdleConns)
 }
 
@@ -106,4 +122,21 @@ func WithTransaction(fn func(tx *gorm.DB) error) error {
 // BatchInsert 批量插入
 func BatchInsert(data interface{}) error {
 	return GORM.CreateInBatches(data, 100).Error
+}
+
+// IsConnected 检查数据库是否连接成功
+func IsConnected() bool {
+	if GORM == nil {
+		return false
+	}
+	
+	sqlDB, err := GORM.DB()
+	if err != nil {
+		return false
+	}
+	
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+	
+	return sqlDB.PingContext(ctx) == nil
 }
