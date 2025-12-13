@@ -47,7 +47,7 @@ func SetupRoutes(router *gin.Engine) {
 		// 用户相关
 		users := api.Group("/users")
 		{
-			users.GET("/profile", handlers.GetUserProfile)
+			users.GET("/profile", handlers.GetProfile)
 			users.PUT("/profile", handlers.UpdateUserProfile)
 			users.PUT("/password", handlers.ChangePassword)
 		}
