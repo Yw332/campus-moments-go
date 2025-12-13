@@ -1,0 +1,2687 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "默认模块",
+    "description": "",
+    "version": "1.0.0"
+  },
+  "tags": [],
+  "paths": {
+    "/": {
+      "get": {
+        "summary": "根路径 - 服务信息",
+        "description": "API 服务根路径，返回状态信息",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                },
+                "example": {
+                  "code": 200,
+                  "message": "Campus Moments Go API 运行中",
+                  "data": {
+                    "version": "1.0.0",
+                    "status": "healthy"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health": {
+      "get": {
+        "summary": "健康检查",
+        "description": "检查系统服务与数据库连接是否正常",
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                },
+                "example": {
+                  "code": 200,
+                  "message": "ok",
+                  "data": {
+                    "service": "Campus Moments Go API",
+                    "database": "connected"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "summary": "用户注册",
+        "deprecated": false,
+        "description": "新用户通过用户名，手机号跟密码注册账号",
+        "tags": [],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": {
+                    "type": "string",
+                    "title": "用户名",
+                    "description": "3-20个字符",
+                    "pattern": "^[a-zA-Z0-9_\\u4e00-\\u9fa5]{3,20}$",
+                    "example": "newuser"
+                  },
+                  "phone": {
+                    "type": "string",
+                    "title": "手机号",
+                    "description": "11位",
+                    "pattern": "^1[3-9]\\d{9}$",
+                    "example": "13800138000"
+                  },
+                  "password": {
+                    "type": "string",
+                    "title": "密码",
+                    "description": "8-20位含大小写字母和数字",
+                    "pattern": "^(?=.*[a-z])(?=.*[A-Z])(?=.*\\d)[a-zA-Z\\d]{8,20}$",
+                    "example": "Aa123456"
+                  }
+                },
+                "required": [
+                  "username",
+                  "phone",
+                  "password"
+                ]
+              },
+              "examples": {
+                "1": {
+                  "value": {
+                    "username": "newuser1",
+                    "phone": "13800138000",
+                    "password": "Aa123456"
+                  },
+                  "summary": "示例 1"
+                },
+                "2": {
+                  "value": {
+                    "username": "ChK?",
+                    "phone": "18882515631",
+                    "password": "jYWjg8tfESyFmD"
+                  },
+                  "summary": "示例 2"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "title": "状态码"
+                    },
+                    "message": {
+                      "type": "string",
+                      "title": "提示信息"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "userId": {
+                          "type": "integer",
+                          "title": "用户id"
+                        },
+                        "username": {
+                          "type": "string",
+                          "title": "用户名"
+                        },
+                        "phone": {
+                          "type": "string",
+                          "title": "手机号"
+                        }
+                      },
+                      "title": "实际数据",
+                      "required": [
+                        "userId",
+                        "username",
+                        "phone"
+                      ],
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                },
+                "examples": {
+                  "1": {
+                    "summary": "注册成功",
+                    "value": {
+                      "code": 200,
+                      "message": "注册成功",
+                      "data": {
+                        "userId": 2,
+                        "username": "newuser",
+                        "phone": "13800138000"
+                      }
+                    }
+                  },
+                  "2": {
+                    "summary": "用户名已存在",
+                    "value": {
+                      "code": 400,
+                      "message": "用户名已存在",
+                      "data": null
+                    }
+                  },
+                  "3": {
+                    "summary": "手机号已注册",
+                    "value": {
+                      "code": 400,
+                      "message": "手机号已注册",
+                      "data": null
+                    }
+                  },
+                  "4": {
+                    "summary": "密码不符合要求",
+                    "value": {
+                      "code": 400,
+                      "message": "密码必须包含大小写字母和数字，长度8-20位",
+                      "data": null
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "summary": "用户登录",
+        "deprecated": false,
+        "description": "用户通过用户名或手机号和密码登录系统，成功后返回 token 和用户信息。系统自动识别输入的是用户名还是手机号。",
+        "tags": [],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "account": {
+                    "type": "string",
+                    "title": "账户",
+                    "description": "用户名或手机号"
+                  },
+                  "password": {
+                    "type": "string",
+                    "title": "密码",
+                    "description": "密码"
+                  }
+                },
+                "required": [
+                  "account",
+                  "password"
+                ]
+              },
+              "examples": {
+                "1": {
+                  "value": {
+                    "account": "13800138000",
+                    "password": "Aa123456"
+                  },
+                  "summary": "手机号登录示例"
+                },
+                "2": {
+                  "value": {
+                    "account": "newuser",
+                    "password": "123456"
+                  },
+                  "summary": "用户名登录示例"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "token": {
+                          "type": "string"
+                        },
+                        "userInfo": {
+                          "type": "object",
+                          "properties": {
+                            "userId": {
+                              "type": "integer"
+                            },
+                            "username": {
+                              "type": "string"
+                            },
+                            "phone": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "userId",
+                            "username",
+                            "phone"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "token",
+                        "userInfo"
+                      ],
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                },
+                "examples": {
+                  "1": {
+                    "summary": "登录成功",
+                    "value": {
+                      "code": 200,
+                      "message": "登录成功",
+                      "data": {
+                        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+                        "userInfo": {
+                          "userId": 2,
+                          "username": "newuser",
+                          "phone": "13800138000"
+                        }
+                      }
+                    }
+                  },
+                  "2": {
+                    "summary": "账户不存在",
+                    "value": {
+                      "code": 404,
+                      "message": "账户不存在",
+                      "data": null
+                    }
+                  },
+                  "3": {
+                    "summary": "密码错误",
+                    "value": {
+                      "code": 401,
+                      "message": "密码错误",
+                      "data": null
+                    }
+                  },
+                  "4": {
+                    "summary": "账户已被锁定",
+                    "value": {
+                      "code": 403,
+                      "message": "账户已被锁定，请联系管理员",
+                      "data": null
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "summary": "退出登录",
+        "deprecated": false,
+        "description": "用户主动退出登录，使令牌失效",
+        "tags": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer",
+                      "title": "状态码"
+                    },
+                    "message": {
+                      "type": "string",
+                      "title": "提示信息"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {},
+                      "title": "实际数据"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "code": 200,
+                  "message": "退出成功",
+                  "data": null
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/upload/file": {
+      "post": {
+        "summary": "上传文件",
+        "deprecated": false,
+        "description": "上传图片或视频文件",
+        "tags": [],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "format": "binary",
+                    "type": "string",
+                    "description": "图片或视频文件",
+                    "example": "file://C:\\Users\\Administrator\\Pictures\\MSI Wallpaper\\MSI.png"
+                  },
+                  "type": {
+                    "description": "文件类型：'image' 或 'video'\n",
+                    "example": "",
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "file",
+                  "type"
+                ]
+              },
+              "examples": {}
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "url": {
+                          "type": "string"
+                        },
+                        "type": {
+                          "type": "string"
+                        },
+                        "size": {
+                          "type": "integer"
+                        },
+                        "width": {
+                          "type": "integer"
+                        },
+                        "height": {
+                          "type": "integer"
+                        },
+                        "duration": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "url",
+                        "type",
+                        "size",
+                        "width",
+                        "height",
+                        "duration"
+                      ],
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                },
+                "examples": {
+                  "1": {
+                    "summary": "上传成功",
+                    "value": {
+                      "code": 200,
+                      "message": "上传成功",
+                      "data": {
+                        "url": "https://cdn.your-app.com/2024/01/abc123.jpg",
+                        "type": "image",
+                        "size": 2048000,
+                        "width": 1080,
+                        "height": 720,
+                        "duration": 0
+                      }
+                    }
+                  },
+                  "2": {
+                    "summary": "文件大小超过限制",
+                    "value": {
+                      "code": 400,
+                      "message": "文件大小超过限制",
+                      "data": null
+                    }
+                  },
+                  "3": {
+                    "summary": "文件格式不支持",
+                    "value": {
+                      "code": 400,
+                      "message": "仅支持 JPG、PNG、GIF、WebP 图片格式或 MP4、MOV 视频格式",
+                      "data": null
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/upload/avatar": {
+      "post": {
+        "summary": "上传头像接口",
+        "deprecated": false,
+        "description": "专门用于上传用户头像图片",
+        "tags": [],
+        "parameters": [],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "format": "binary",
+                    "type": "string",
+                    "description": "头像图片",
+                    "example": ""
+                  }
+                },
+                "required": [
+                  "file"
+                ]
+              },
+              "examples": {}
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "avatarUrl": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "avatarUrl"
+                      ],
+                      "nullable": true
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                },
+                "examples": {
+                  "1": {
+                    "summary": "上传成功",
+                    "value": {
+                      "code": 200,
+                      "message": "上传成功",
+                      "data": {
+                        "avatarUrl": "https://cdn.com/avatars/123456.jpg"
+                      }
+                    }
+                  },
+                  "2": {
+                    "summary": "文件格式不支持",
+                    "value": {
+                      "code": 400,
+                      "message": "仅支持 JPG、PNG、WebP 格式",
+                      "data": null
+                    }
+                  },
+                  "3": {
+                    "summary": "文件大小超过限制",
+                    "value": {
+                      "code": 400,
+                      "message": "文件大小超过限制",
+                      "data": null
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/api/moments": {
+      "post": {
+        "summary": "发布动态",
+        "deprecated": false,
+        "description": "已登录用户能够发布文字、图片或视频动态",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "content": {
+                    "type": "string",
+                    "title": "动态文字内容"
+                  },
+                  "tags": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "title": "标签数组"
+                  },
+                  "media": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "url": {
+                          "type": "string",
+                          "title": "文件URL"
+                        },
+                        "type": {
+                          "type": "string",
+                          "title": "类型：照片或视频"
+                        }
+                      },
+                      "required": [
+                        "url",
+                        "type"
+                      ]
+                    },
+                    "title": "媒体文件数组（来自上传接口）"
+                  },
+                  "visibility": {
+                    "type": "integer",
+                    "title": "可见性，默认0（0公开/1好友/2私密）"
+                  }
+                },
+                "required": [
+                  "content"
+                ]
+              },
+              "example": {
+                "content": "这是我的第1条动态！",
+                "tags": [
+                  "校园",
+                  "生活"
+                ],
+                "media": [
+                  {
+                    "url": "https://cdn.your-app.com/2024/01/abc123.jpg",
+                    "type": "image"
+                  },
+                  {
+                    "url": "https://cdn.your-app.com/2024/01/xyz789.mp4",
+                    "type": "video"
+                  }
+                ],
+                "visibility": 0
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "postId": {
+                          "type": "integer"
+                        },
+                        "content": {
+                          "type": "string"
+                        },
+                        "tags": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          }
+                        },
+                        "media": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "url": {
+                                "type": "string"
+                              },
+                              "type": {
+                                "type": "string"
+                              },
+                              "size": {
+                                "type": "integer"
+                              },
+                              "width": {
+                                "type": "integer"
+                              },
+                              "height": {
+                                "type": "integer"
+                              },
+                              "duration": {
+                                "type": "integer"
+                              }
+                            }
+                          }
+                        },
+                        "createdAt": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "postId",
+                        "content",
+                        "tags",
+                        "media",
+                        "createdAt"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                },
+                "examples": {
+                  "1": {
+                    "summary": "发布成功",
+                    "value": {
+                      "code": 200,
+                      "message": "发布成功",
+                      "data": {
+                        "postId": 1,
+                        "content": "这是我的第1条动态！",
+                        "tags": [
+                          "校园",
+                          "生活"
+                        ],
+                        "media": [
+                          {
+                            "url": "https://cdn.your-app.com/2024/01/abc123.jpg",
+                            "type": "image",
+                            "size": 2048000,
+                            "width": 1080,
+                            "height": 720,
+                            "duration": 0
+                          }
+                        ],
+                        "createdAt": "2024-01-15T14:30:00Z"
+                      }
+                    }
+                  },
+                  "2": {
+                    "summary": "发布失败",
+                    "value": ""
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ]
+      }
+    },
+    "/moments": {
+      "get": {
+        "summary": "获取动态列表",
+        "deprecated": false,
+        "description": "获取动态列表（当前为全量返回）",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer" },
+            "example": 1
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer" },
+            "example": 10
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "list": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "integer",
+                                "title": "动态id"
+                              },
+                              "content": {
+                                "type": "string",
+                                "title": "文字内容"
+                              },
+                              "userId": {
+                                "type": "integer",
+                                "title": "用户id"
+                              },
+                              "username": {
+                                "type": "string",
+                                "title": "用户名"
+                              },
+                              "avatar": {
+                                "type": "string",
+                                "title": "用户头像"
+                              },
+                              "createTime": {
+                                "type": "string",
+                                "title": "创建时间"
+                              },
+                              "tags": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "title": "动态标签"
+                              },
+                              "media": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "url": {
+                                      "type": "string"
+                                    },
+                                    "type": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "url",
+                                    "type"
+                                  ]
+                                },
+                                "title": "媒体内容"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "content",
+                              "userId",
+                              "username",
+                              "avatar",
+                              "createTime",
+                              "tags",
+                              "media"
+                            ]
+                          }
+                        },
+                        "total": {
+                          "type": "integer",
+                          "title": "动态总数"
+                        }
+                      },
+                      "required": [
+                        "list",
+                        "total"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "code": 200,
+                  "message": "success",
+                  "data": {
+                    "list": [
+                      {
+                        "id": 1,
+                        "content": "今天的校园美景！",
+                        "userId": 2,
+                        "username": "yw166",
+                        "avatar": "https://cdn.com/avatars/2.jpg",
+                        "createTime": "2024-11-27T03:00:00.000Z",
+                        "tags": [
+                          "校园",
+                          "风景"
+                        ],
+                        "media": [
+                          {
+                            "url": "https://cdn.com/posts/1_1.jpg",
+                            "type": "image"
+                          },
+                          {
+                            "url": "https://cdn.com/posts/1_2.jpg",
+                            "type": "image"
+                          }
+                        ]
+                      },
+                      {
+                        "id": 2,
+                        "content": "校园运动会视频",
+                        "userId": 3,
+                        "username": "xiaoming",
+                        "avatar": "https://cdn.com/avatars/3.jpg",
+                        "createTime": "2024-11-27T02:30:00.000Z",
+                        "tags": [
+                          "运动",
+                          "校园"
+                        ],
+                        "media": [
+                          {
+                            "url": "https://cdn.com/posts/2_1.mp4",
+                            "type": "video"
+                          }
+                        ]
+                      }
+                    ],
+                    "total": 2
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/moments/{id}": {
+      "get": {
+        "summary": "获取动态详情",
+        "deprecated": false,
+        "description": "获取单条动态的完整信息。",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "post": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "integer"
+                            },
+                            "content": {
+                              "type": "string"
+                            },
+                            "userId": {
+                              "type": "integer"
+                            },
+                            "username": {
+                              "type": "string"
+                            },
+                            "avatar": {
+                              "type": "string"
+                            },
+                            "createTime": {
+                              "type": "string"
+                            },
+                            "tags": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "media": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "url": {
+                                    "type": "string"
+                                  },
+                                  "type": {
+                                    "type": "string"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "content",
+                            "userId",
+                            "username",
+                            "avatar",
+                            "createTime",
+                            "tags",
+                            "media"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "post"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                },
+                "examples": {
+                  "1": {
+                    "summary": "成功",
+                    "value": {
+                      "code": 200,
+                      "message": "success",
+                      "data": {
+                        "post": {
+                          "id": 1,
+                          "content": "帖子内容",
+                          "userId": 2,
+                          "username": "newuser666",
+                          "avatar": "https://cdn.com/avatars/2.jpg",
+                          "createTime": "2024-11-26T12:52:30.734Z",
+                          "tags": [
+                            "校园",
+                            "生活"
+                          ],
+                          "media": [
+                            {
+                              "url": "https://cdn.com/posts/1_1.jpg",
+                              "type": "image"
+                            }
+                          ]
+                        }
+                      }
+                    }
+                  },
+                  "2": {
+                    "summary": "失败",
+                    "value": {
+                      "code": 404,
+                      "message": "动态未找到",
+                      "data": null
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      },
+      "patch": {
+        "summary": "修改动态（部分更新）",
+        "deprecated": false,
+        "description": "本功能允许用户对已发布的动态进行灵活修改，支持更新文字内容、标签、媒体文件及可见性设置。用户可以选择只更新其中一项或多项，系统将根据提交的字段进行局部更新。",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "content": {
+                    "type": "string",
+                    "title": "动态文字内容"
+                  },
+                  "tags": {
+                    "type": "array",
+                    "items": {
+                      "type": "string"
+                    },
+                    "title": "标签数组"
+                  },
+                  "media": {
+                    "type": "array",
+                    "items": {
+                      "type": "object",
+                      "properties": {
+                        "url": {
+                          "type": "string",
+                          "title": "文件URL"
+                        },
+                        "type": {
+                          "type": "string",
+                          "title": "类型：照片或视频"
+                        }
+                      },
+                      "required": [
+                        "url",
+                        "type"
+                      ]
+                    },
+                    "title": "媒体文件数组（来自上传接口）"
+                  },
+                  "visibility": {
+                    "type": "integer",
+                    "title": "可见性，默认0（0公开/1好友/2私密）"
+                  }
+                },
+                "required": [
+                  "content",
+                  "tags",
+                  "media",
+                  "visibility"
+                ]
+              },
+              "examples": {
+                "1": {
+                  "value": {
+                    "content": "修改后的内容",
+                    "tags": [
+                      "校园",
+                      "学习"
+                    ],
+                    "media": [
+                      {
+                        "url": "https://cdn.com/new_image.jpg",
+                        "type": "image"
+                      },
+                      {
+                        "url": "https://cdn.com/new_video.mp4",
+                        "type": "video"
+                      }
+                    ],
+                    "visibility": 1
+                  },
+                  "summary": "只更新内容"
+                },
+                "2": {
+                  "value": {
+                    "tags": [
+                      "只更新标签"
+                    ]
+                  },
+                  "summary": "只更新标签"
+                },
+                "3": {
+                  "value": {
+                    "content": "更新内容",
+                    "tags": [
+                      "新标签"
+                    ]
+                  },
+                  "summary": "同时更新内容与标签"
+                },
+                "4": {
+                  "value": {
+                    "media": [
+                      {
+                        "url": "https://cdn.com/new_photo1.jpg",
+                        "type": "image"
+                      },
+                      {
+                        "url": "https://cdn.com/new_video1.mp4",
+                        "type": "video"
+                      }
+                    ]
+                  },
+                  "summary": "替换媒体文件"
+                },
+                "5": {
+                  "value": {
+                    "media": []
+                  },
+                  "summary": "删除所有媒体"
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "postId": {
+                          "type": "integer"
+                        },
+                        "post": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "integer"
+                            },
+                            "content": {
+                              "type": "string"
+                            },
+                            "userId": {
+                              "type": "integer"
+                            },
+                            "username": {
+                              "type": "string"
+                            },
+                            "avatar": {
+                              "type": "string"
+                            },
+                            "createTime": {
+                              "type": "string"
+                            },
+                            "updateTime": {
+                              "type": "string"
+                            },
+                            "tags": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              }
+                            },
+                            "media": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "url": {
+                                    "type": "string"
+                                  },
+                                  "type": {
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "url",
+                                  "type"
+                                ]
+                              }
+                            },
+                            "visibility": {
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "content",
+                            "userId",
+                            "username",
+                            "avatar",
+                            "createTime",
+                            "updateTime",
+                            "tags",
+                            "media",
+                            "visibility"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "postId",
+                        "post"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "code": 200,
+                  "message": "更新成功",
+                  "data": {
+                    "postId": 1,
+                    "post": {
+                      "id": 1,
+                      "content": "只更新内容，不更新标签",
+                      "userId": 2,
+                      "username": "newuser666",
+                      "avatar": "https://cdn.com/avatars/2.jpg",
+                      "createTime": "2024-11-26T12:52:30.734Z",
+                      "updateTime": "2024-11-26T13:05:00.000Z",
+                      "tags": [
+                        "校园",
+                        "生活"
+                      ],
+                      "media": [
+                        {
+                          "url": "https://cdn.com/posts/1_1.jpg",
+                          "type": "image"
+                        },
+                        {
+                          "url": "https://cdn.com/posts/1_2.mp4",
+                          "type": "video"
+                        }
+                      ],
+                      "visibility": 0
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          { "BearerAuth": [] }
+        ]
+      },
+      "delete": {
+        "summary": "删除动态",
+        "deprecated": false,
+        "description": "允许用户删除自己已发布的动态。删除后，动态及其关联的媒体、评论、点赞等数据将从系统中移除，不可恢复。",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                },
+                "examples": {
+                  "1": {
+                    "summary": "删除成功",
+                    "value": {
+                      "code": 200,
+                      "message": "删除成功",
+                      "data": {
+                        "postId": 1
+                      }
+                    }
+                  },
+                  "2": {
+                    "summary": "未找到",
+                    "value": {
+                      "code": 404,
+                      "message": "动态不存在",
+                      "data": null
+                    }
+                  },
+                  "3": {
+                    "summary": "无权限删除",
+                    "value": {
+                      "code": 403,
+                      "message": "无权限删除该动态",
+                      "data": null
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/users/profile": {
+      "get": {
+        "summary": "获取用户资料",
+        "deprecated": false,
+        "description": "获取当前登录用户的完整资料信息。",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "userId": {
+                          "type": "integer"
+                        },
+                        "username": {
+                          "type": "string"
+                        },
+                        "phone": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "userId",
+                        "username",
+                        "phone"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                },
+                "example": {
+                  "code": 200,
+                  "message": "获取成功",
+                  "data": {
+                    "userId": 2,
+                    "username": "newuser",
+                    "phone": "13800138000"
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          { "BearerAuth": [] }
+        ]
+      },
+      "put": {
+        "summary": "更新用户资料",
+        "deprecated": false,
+        "description": "修改昵称等个人信息。",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {}
+              },
+              "example": "{\r\n    \"username\": \"newusername\"\r\n}s"
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {}
+                },
+                "example": {
+                  "code": 200,
+                  "message": "更新成功",
+                  "data": {
+                    "userId": 2,
+                    "username": "张三",
+                    "avatar": "https://cdn.com/avatars/123456.jpg",
+                    "phone": "13800138000"
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/users/password": {
+      "put": {
+        "summary": "修改密码",
+        "deprecated": false,
+        "description": "登录后修改密码（需验证原密码）",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "Authorization",
+            "in": "header",
+            "description": "",
+            "required": false,
+            "example": "Bearer {{token}}",
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "oldPassword": {
+                    "type": "string",
+                    "title": "原密码"
+                  },
+                  "newPassword": {
+                    "type": "string",
+                    "title": "新密码"
+                  },
+                  "confirmPassword": {
+                    "type": "string",
+                    "title": "确认密码"
+                  }
+                },
+                "required": [
+                  "oldPassword",
+                  "newPassword",
+                  "confirmPassword"
+                ]
+              },
+              "example": "{\r\n  \"oldPassword\": \"Aa123456\",\r\n  \"newPassword\": \"Bb789012\",\r\n  \"confirmPassword\": \"Bb789012\"\r\n}s"
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "null"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                },
+                "examples": {
+                  "1": {
+                    "summary": "密码修改成功",
+                    "value": {
+                      "code": 200,
+                      "message": "密码修改成功，请重新登录",
+                      "data": null
+                    }
+                  },
+                  "2": {
+                    "summary": "原密码错误",
+                    "value": {
+                      "code": 400,
+                      "message": "原密码错误",
+                      "data": null
+                    }
+                  },
+                  "3": {
+                    "summary": "确认密码不匹配",
+                    "value": {
+                      "code": 400,
+                      "message": "两次输入的新密码不一致",
+                      "data": null
+                    }
+                  },
+                  "4": {
+                    "summary": "新密码格式错误",
+                    "value": {
+                      "code": 400,
+                      "message": "新密码必须包含大小写字母和数字，长度8-20位",
+                      "data": null
+                    }
+                  },
+                  "5": {
+                    "summary": "新旧密码相同",
+                    "value": {
+                      "code": 400,
+                      "message": "新密码不能与原密码相同",
+                      "data": null
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          { "BearerAuth": [] }
+        ]
+      }
+    },
+    "/api/hot-keywords": {
+      "get": {
+        "summary": "获取热词 ",
+        "deprecated": false,
+        "description": "返回当前热门搜索关键词。",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "返回数量(1-50),返回热词的前limit的名",
+            "required": false,
+            "example": 5,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "keywords": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "keyword": {
+                                "type": "string"
+                              },
+                              "count": {
+                                "type": "integer"
+                              },
+                              "lastSearchTime": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "keyword",
+                              "count",
+                              "lastSearchTime"
+                            ]
+                          }
+                        },
+                        "total": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "keywords",
+                        "total"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                },
+                "examples": {
+                  "1": {
+                    "summary": "获取热词成功",
+                    "value": {
+                      "code": 200,
+                      "message": "success",
+                      "data": {
+                        "keywords": [
+                          {
+                            "keyword": "校园",
+                            "count": 145,
+                            "lastSearchTime": "2024-11-27T14:20:00.000Z"
+                          },
+                          {
+                            "keyword": "考试",
+                            "count": 89,
+                            "lastSearchTime": "2024-11-27T13:45:00.000Z"
+                          },
+                          {
+                            "keyword": "食堂",
+                            "count": 67,
+                            "lastSearchTime": "2024-11-27T12:30:00.000Z"
+                          },
+                          {
+                            "keyword": "图书馆",
+                            "count": 54,
+                            "lastSearchTime": "2024-11-27T11:15:00.000Z"
+                          },
+                          {
+                            "keyword": "运动会",
+                            "count": 42,
+                            "lastSearchTime": "2024-11-26T16:40:00.000Z"
+                          }
+                        ],
+                        "total": 5
+                      }
+                    }
+                  },
+                  "2": {
+                    "summary": "参数超出范围",
+                    "value": {
+                      "code": 400,
+                      "message": "limit参数必须在1-50之间",
+                      "data": null
+                    }
+                  },
+                  "3": {
+                    "summary": "无热词",
+                    "value": {
+                      "code": 200,
+                      "message": "success",
+                      "data": {
+                        "keywords": [],
+                        "total": 0
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/search/hot-words": {
+      "get": {
+        "summary": "获取热词",
+        "deprecated": false,
+        "description": "返回当前热门搜索关键词（别名路由）",
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/BaseResponse" }
+              }
+            }
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/search/history": {
+      "get": {
+        "summary": "获取搜索历史",
+        "deprecated": false,
+        "description": "获取当前用户的搜索历史记录。",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "获取搜索历史的数量（1-100）",
+            "required": false,
+            "example": 10,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "history": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "keyword": {
+                                "type": "string"
+                              },
+                              "searchTime": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "keyword",
+                              "searchTime"
+                            ]
+                          }
+                        },
+                        "total": {
+                          "type": "integer"
+                        }
+                      },
+                      "required": [
+                        "history",
+                        "total"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                },
+                "examples": {
+                  "1": {
+                    "summary": "查询搜索历史",
+                    "value": {
+                      "code": 200,
+                      "message": "success",
+                      "data": {
+                        "history": [
+                          {
+                            "keyword": "校园招聘会",
+                            "searchTime": "2024-11-27T15:30:00.000Z"
+                          },
+                          {
+                            "keyword": "程序设计大赛",
+                            "searchTime": "2024-11-27T14:45:00.000Z"
+                          },
+                          {
+                            "keyword": "校园美食节",
+                            "searchTime": "2024-11-27T13:20:00.000Z"
+                          },
+                          {
+                            "keyword": "图书馆开放时间",
+                            "searchTime": "2024-11-27T11:10:00.000Z"
+                          },
+                          {
+                            "keyword": "校园篮球赛",
+                            "searchTime": "2024-11-26T17:30:00.000Z"
+                          }
+                        ],
+                        "total": 5
+                      }
+                    }
+                  },
+                  "2": {
+                    "summary": "无搜索历史",
+                    "value": {
+                      "code": 200,
+                      "message": "success",
+                      "data": {
+                        "history": [],
+                        "total": 0
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      },
+      "post": {
+        "summary": "保存搜索历史",
+        "deprecated": false,
+        "description": "保存用户的搜索关键词到历史记录。",
+        "tags": [],
+        "parameters": [],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "null"
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                },
+                "examples": {
+                  "1": {
+                    "summary": "搜索记录成功保存",
+                    "value": {
+                      "code": 200,
+                      "message": "搜索记录已保存",
+                      "data": null
+                    }
+                  },
+                  "2": {
+                    "summary": "关键词为空",
+                    "value": {
+                      "code": 400,
+                      "message": "搜索关键词不能为空",
+                      "data": null
+                    }
+                  },
+                  "3": {
+                    "summary": "关键词不能过长",
+                    "value": {
+                      "code": 400,
+                      "message": "搜索关键词不能超过100个字符",
+                      "data": null
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/content/list": {
+      "get": {
+        "summary": "内容筛选列表",
+        "deprecated": false,
+        "description": "按\"最热/最新\"标签筛选动态列表。",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "sort",
+            "in": "query",
+            "description": "排序: latest/hottest/comprehensive",
+            "required": false,
+            "example": "latest",
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "tag",
+            "in": "query",
+            "description": "按标签筛选",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "页码",
+            "required": false,
+            "example": 1,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "每页数量",
+            "required": false,
+            "example": 10,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "list": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "integer"
+                              },
+                              "content": {
+                                "type": "string"
+                              },
+                              "userId": {
+                                "type": "integer"
+                              },
+                              "username": {
+                                "type": "string"
+                              },
+                              "createTime": {
+                                "type": "string"
+                              },
+                              "tags": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "media": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "url": {
+                                      "type": "string"
+                                    },
+                                    "type": {
+                                      "type": "string"
+                                    }
+                                  }
+                                }
+                              },
+                              "visibility": {
+                                "type": "integer"
+                              },
+                              "likeCount": {
+                                "type": "integer"
+                              },
+                              "commentCount": {
+                                "type": "integer"
+                              },
+                              "viewCount": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "content",
+                              "userId",
+                              "username",
+                              "createTime",
+                              "tags",
+                              "media",
+                              "visibility",
+                              "likeCount",
+                              "commentCount",
+                              "viewCount"
+                            ]
+                          }
+                        },
+                        "total": {
+                          "type": "integer"
+                        },
+                        "page": {
+                          "type": "integer"
+                        },
+                        "size": {
+                          "type": "integer"
+                        },
+                        "sort": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "list",
+                        "total",
+                        "page",
+                        "size",
+                        "sort"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                },
+                "examples": {
+                  "1": {
+                    "summary": "最新排序响应",
+                    "value": {
+                      "code": 200,
+                      "message": "success",
+                      "data": {
+                        "list": [
+                          {
+                            "id": 12,
+                            "content": "今天图书馆人好多",
+                            "userId": 15,
+                            "username": "study_buddy",
+                            "createTime": "2024-11-27T14:20:00.000Z",
+                            "tags": [
+                              "学习",
+                              "图书馆"
+                            ],
+                            "media": [],
+                            "visibility": 0,
+                            "likeCount": 45,
+                            "commentCount": 12,
+                            "viewCount": 320
+                          },
+                          {
+                            "id": 11,
+                            "content": "食堂新菜品尝鲜",
+                            "userId": 8,
+                            "username": "foodie",
+                            "createTime": "2024-11-27T12:45:00.000Z",
+                            "tags": [
+                              "美食",
+                              "食堂"
+                            ],
+                            "media": [
+                              {
+                                "url": "https://cdn.example.com/food.jpg",
+                                "type": "image"
+                              }
+                            ],
+                            "visibility": 0,
+                            "likeCount": 120,
+                            "commentCount": 45,
+                            "viewCount": 890
+                          }
+                        ],
+                        "total": 8,
+                        "page": 1,
+                        "size": 10,
+                        "sort": "latest"
+                      }
+                    }
+                  },
+                  "2": {
+                    "summary": "无数据",
+                    "value": {
+                      "code": 200,
+                      "message": "success",
+                      "data": {
+                        "list": [],
+                        "total": 0,
+                        "page": 1,
+                        "size": 10,
+                        "sort": "latest"
+                      }
+                    }
+                  },
+                  "3": {
+                    "summary": "最热排序响应",
+                    "value": {
+                      "code": 200,
+                      "message": "success",
+                      "data": {
+                        "list": [
+                          {
+                            "id": 5,
+                            "content": "校庆晚会太精彩了！",
+                            "userId": 7,
+                            "username": "party_king",
+                            "createTime": "2024-11-25T20:00:00.000Z",
+                            "tags": [
+                              "校庆",
+                              "晚会",
+                              "校园"
+                            ],
+                            "media": [
+                              {
+                                "url": "https://cdn.example.com/party1.jpg",
+                                "type": "image"
+                              }
+                            ],
+                            "visibility": 0,
+                            "likeCount": 1560,
+                            "commentCount": 289,
+                            "viewCount": 8900
+                          },
+                          {
+                            "id": 3,
+                            "content": "篮球决赛精彩瞬间",
+                            "userId": 9,
+                            "username": "basketball_fan",
+                            "createTime": "2024-11-26T16:30:00.000Z",
+                            "tags": [
+                              "篮球",
+                              "运动",
+                              "校园"
+                            ],
+                            "media": [
+                              {
+                                "url": "https://cdn.example.com/basketball.mp4",
+                                "type": "video"
+                              }
+                            ],
+                            "visibility": 0,
+                            "likeCount": 980,
+                            "commentCount": 156,
+                            "viewCount": 4500
+                          }
+                        ],
+                        "total": 15,
+                        "page": 1,
+                        "size": 10,
+                        "sort": "hottest",
+                        "tag": "校园"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": []
+      }
+    },
+    "/api/search": {
+      "get": {
+        "summary": "支持关键词搜索内容",
+        "deprecated": false,
+        "description": "根据关键词搜索相关动态。",
+        "tags": [],
+        "parameters": [
+          {
+            "name": "keyword",
+            "in": "query",
+            "description": "搜索关键词",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "页码",
+            "required": false,
+            "example": 1,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "每页查询的动态数量",
+            "required": false,
+            "example": 5,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "code": {
+                      "type": "integer"
+                    },
+                    "message": {
+                      "type": "string"
+                    },
+                    "data": {
+                      "type": "object",
+                      "properties": {
+                        "list": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "id": {
+                                "type": "integer"
+                              },
+                              "content": {
+                                "type": "string"
+                              },
+                              "userId": {
+                                "type": "integer"
+                              },
+                              "username": {
+                                "type": "string"
+                              },
+                              "createTime": {
+                                "type": "string"
+                              },
+                              "tags": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "media": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "url": {
+                                      "type": "string"
+                                    },
+                                    "type": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "url",
+                                    "type"
+                                  ]
+                                }
+                              },
+                              "visibility": {
+                                "type": "integer"
+                              },
+                              "likeCount": {
+                                "type": "integer"
+                              },
+                              "commentCount": {
+                                "type": "integer"
+                              },
+                              "viewCount": {
+                                "type": "integer"
+                              }
+                            },
+                            "required": [
+                              "id",
+                              "content",
+                              "userId",
+                              "username",
+                              "createTime",
+                              "tags",
+                              "media",
+                              "visibility",
+                              "likeCount",
+                              "commentCount",
+                              "viewCount"
+                            ]
+                          }
+                        },
+                        "total": {
+                          "type": "integer"
+                        },
+                        "page": {
+                          "type": "integer"
+                        },
+                        "size": {
+                          "type": "integer"
+                        },
+                        "keyword": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "list",
+                        "total",
+                        "page",
+                        "size",
+                        "keyword"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "code",
+                    "message",
+                    "data"
+                  ]
+                },
+                "examples": {
+                  "1": {
+                    "summary": "关键词搜索成功",
+                    "value": {
+                      "code": 200,
+                      "message": "搜索成功",
+                      "data": {
+                        "list": [
+                          {
+                            "id": 1,
+                            "content": "今天的校园美景！樱花开了！",
+                            "userId": 2,
+                            "username": "yw166",
+                            "createTime": "2024-11-27T10:30:00.000Z",
+                            "tags": [
+                              "校园",
+                              "风景",
+                              "春天"
+                            ],
+                            "media": [
+                              {
+                                "url": "https://cdn.example.com/campus1.jpg",
+                                "type": "image"
+                              }
+                            ],
+                            "visibility": 0,
+                            "likeCount": 156,
+                            "commentCount": 34,
+                            "viewCount": 1200
+                          },
+                          {
+                            "id": 3,
+                            "content": "校园运动会开始了",
+                            "userId": 4,
+                            "username": "sports_lover",
+                            "createTime": "2024-11-26T09:15:00.000Z",
+                            "tags": [
+                              "校园",
+                              "运动",
+                              "运动会"
+                            ],
+                            "media": [
+                              {
+                                "url": "https://cdn.example.com/sports.mp4",
+                                "type": "video"
+                              }
+                            ],
+                            "visibility": 0,
+                            "likeCount": 289,
+                            "commentCount": 67,
+                            "viewCount": 2500
+                          }
+                        ],
+                        "total": 2,
+                        "page": 1,
+                        "size": 10,
+                        "keyword": "校园"
+                      }
+                    }
+                  },
+                  "2": {
+                    "summary": "关键词为空",
+                    "value": {
+                      "code": 400,
+                      "message": "搜索关键词不能为空",
+                      "data": null
+                    }
+                  }
+                }
+              }
+            },
+            "headers": {}
+          }
+        },
+        "security": [
+          { "BearerAuth": [] }
+        ]
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BaseResponse": {
+        "type": "object",
+        "properties": {
+          "code": { "type": "integer" },
+          "message": { "type": "string" },
+          "data": { "type": "object" }
+        },
+        "required": ["code", "message", "data"]
+      }
+    },
+    "responses": {},
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  },
+  "servers": [],
+  "security": []
+}
