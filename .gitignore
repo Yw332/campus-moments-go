@@ -1,0 +1,38 @@
+﻿# 依赖目录
+vendor/
+
+# 环境变量文件
+.env
+.env.local
+.env.*.local
+
+# 日志文件
+*.log
+logs/
+
+# 编译输出
+campus-moments.exe
+campus-moments
+dist/
+tmp/
+
+# 开发工具文件
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# 操作系统文件
+.DS_Store
+Thumbs.db
+
+# Go测试缓存
+*.test
+*.out
+
+# 本地配置
+config/local.yaml
+
+# 数据库文件
+*.db
+*.sqlite3
