@@ -119,9 +119,15 @@ func (s *AuthService) Register(req *RegisterRequest) (*models.User, error) {
 		return nil, fmt.Errorf("密码加密失败: %v", err)
 	}
 
-	// 获取当前最大ID
+	// 获取当前最大ID - 处理char类型的ID
+	var maxIDStr string
+	db.Raw("SELECT COALESCE(MAX(id), '0000000000') FROM users").Scan(&maxIDStr)
+	log.Printf("当前最大ID字符串: %s", maxIDStr)
+	
+	// 将字符串ID转换为整数
 	var maxID int64
-	db.Raw("SELECT COALESCE(MAX(id), 0) FROM users").Scan(&maxID)
+	fmt.Sscanf(maxIDStr, "%d", &maxID)
+	log.Printf("转换后的最大ID: %d", maxID)
 	
 	// 检查表结构，获取ID字段的默认值信息
 	var columnInfo struct {
@@ -138,12 +144,17 @@ func (s *AuthService) Register(req *RegisterRequest) (*models.User, error) {
 		log.Printf("ID字段信息: %+v", columnInfo)
 	}
 
-	// 创建用户 - 使用已有的maxID变量
+	// 创建用户 - 生成10位字符串ID，前面补零
 	newID := maxID + 1
+	idStr := fmt.Sprintf("%010d", newID) // 格式化为10位数字，前面补零
+	log.Printf("生成的新ID: %s (数字: %d)", idStr, newID)
 	
 	sql := "INSERT INTO users (id, username, phone, password, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, NOW(), NOW())"
 	
-	if err := db.Exec(sql, newID, req.Username, req.Phone, string(hashedPassword), 1).Error; err != nil {
+	log.Printf("执行SQL: %s", sql)
+	log.Printf("参数: id=%s, username=%s, phone=%s", idStr, req.Username, req.Phone)
+	
+	if err := db.Exec(sql, idStr, req.Username, req.Phone, string(hashedPassword), 1).Error; err != nil {
 		return nil, fmt.Errorf("创建用户失败: %v", err)
 	}
 
