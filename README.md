@@ -1,5 +1,236 @@
-🏫 校园时刻 - 后端服务
-一个面向校园的内容分享平台后端服务
+# Campus Moments Go API
 
-📋 项目概述
-校园时刻是一个专为校园场景设计的内容分享平台，学生可以分享校园生活、学习经验、活动信息等。本项目为后端API服务，提供完整的用户认证、动态发布、内容管理等功能。
+## 🚀 项目简介
+
+Campus Moments 是一个基于 Go 语言开发的校园动态分享平台后端API服务，提供用户认证、动态发布、文件上传、内容搜索等核心功能。
+
+## 📋 技术栈
+
+### 后端框架
+- **Go 1.21+** - 主要编程语言
+- **Gin** - Web框架，提供高性能HTTP服务
+- **GORM** - ORM框架，支持MySQL数据库操作
+
+### 数据库
+- **MySQL 8.0** - 主数据库
+- **原生SQL + GORM** - 双重数据库访问模式
+
+### 认证与安全
+- **JWT (JSON Web Token)** - 用户认证
+- **bcrypt** - 密码加密
+- **中间件** - 请求拦截和权限验证
+
+### 文档
+- **OpenAPI 3.0** - API接口文档
+- **Swagger** - 交互式API文档
+
+## 🏗️ 项目结构
+
+```
+campus-moments-go/
+├── cmd/                    # 应用入口
+│   └── api/
+│       └── main.go        # 主程序入口
+├── internal/               # 内部包
+│   ├── handlers/          # HTTP处理器
+│   │   ├── auth_handler.go
+│   │   ├── user_handler.go
+│   │   ├── moment_handler.go
+│   │   └── upload_handler.go
+│   ├── models/            # 数据模型
+│   │   ├── user.go
+│   │   ├── moment.go
+│   │   └── db.go
+│   ├── middleware/        # 中间件
+│   │   └── auth.go
+│   ├── routes/            # 路由配置
+│   │   └── routes.go
+│   └── service/           # 业务逻辑层
+│       ├── auth_service.go
+│       ├── user_service.go
+│       └── moment_service.go
+├── pkg/                   # 公共包
+│   ├── config/           # 配置管理
+│   ├── database/         # 数据库连接
+│   └── jwt/              # JWT工具
+├── docs/                 # 文档目录
+├── go.mod               # Go模块文件
+├── go.sum               # 依赖锁定文件
+├── .env                 # 环境配置
+├── .env.example         # 配置模板
+└── openapi.json         # OpenAPI规范
+```
+
+## 🔧 核心模块
+
+### 1. 认证模块 (`internal/handlers/auth_handler.go`)
+- 用户注册/登录/退出
+- JWT Token管理
+- 密码修改
+- 用户资料管理
+
+**主要接口：**
+- `POST /auth/register` - 用户注册
+- `POST /auth/login` - 用户登录
+- `GET /api/users/profile` - 获取用户资料
+- `PUT /api/users/password` - 修改密码
+
+### 2. 动态模块 (`internal/handlers/moment_handler.go`)
+- 动态发布/编辑/删除
+- 动态列表获取
+- 动态详情查看
+
+**主要接口：**
+- `GET /moments` - 获取动态列表
+- `POST /api/moments` - 发布动态
+- `GET /api/moments/:id` - 获取动态详情
+- `PATCH /api/moments/:id` - 编辑动态
+- `DELETE /api/moments/:id` - 删除动态
+
+### 3. 文件上传模块 (`internal/handlers/upload_handler.go`)
+- 图片上传
+- 头像上传
+- 文件类型验证
+- 大小限制
+
+**主要接口：**
+- `POST /api/upload/file` - 通用文件上传
+- `POST /api/upload/avatar` - 头像上传
+
+### 4. 搜索模块 (`internal/handlers/search_handler.go`)
+- 内容搜索
+- 热词统计
+- 搜索历史
+- 内容筛选
+
+**主要接口：**
+- `GET /api/search` - 搜索内容
+- `GET /api/search/hot-words` - 热门关键词
+- `GET /api/search/history` - 搜索历史
+
+## 🛠️ 快速开始
+
+### 环境要求
+- Go 1.21+
+- MySQL 8.0+
+- Git
+
+### 安装步骤
+
+1. **克隆项目**
+```bash
+git clone https://github.com/Yw332/campus-moments-go.git
+cd campus-moments-go
+```
+
+2. **安装依赖**
+```bash
+go mod download
+```
+
+3. **配置环境变量**
+```bash
+cp .env.example .env
+# 编辑 .env 文件，配置数据库等信息
+```
+
+4. **启动应用**
+```bash
+go run cmd/api/main.go
+```
+
+5. **访问服务**
+- API服务：`http://localhost:8080`
+- 健康检查：`http://localhost:8080/health`
+
+### 部署
+
+#### CNB云原生平台
+项目支持CNB云原生平台部署，使用Procfile配置：
+
+```procfile
+web: ./start.sh
+```
+
+#### Docker部署（未来支持）
+```bash
+# 构建镜像
+docker build -t campus-moments-go .
+
+# 运行容器
+docker run -p 8080:8080 campus-moments-go
+```
+
+## 📚 API文档
+
+- **用户认证接口**: [API_AUTH_DOCS.md](./API_AUTH_DOCS.md)
+- **OpenAPI规范**: [openapi.json](./openapi.json)
+- **在线文档**: 启动服务后访问 `/swagger/index.html`
+
+## 🎯 功能特性
+
+### ✅ 已实现
+- [x] 用户注册/登录认证
+- [x] JWT Token认证机制
+- [x] 动态发布和浏览
+- [x] 文件上传（图片、头像）
+- [x] 内容搜索和筛选
+- [x] 用户资料管理
+- [x] 响应式错误处理
+- [x] 详细的API文档
+
+### 🚧 开发中
+- [ ] 评论系统
+- [ ] 点赞功能
+- [ ] 消息通知
+- [ ] 用户关注系统
+
+### 📋 计划中
+- [ ] 图片压缩处理
+- [ ] 缓存机制优化
+- [ ] 接口限流
+- [ ] 日志系统完善
+- [ ] 单元测试覆盖
+
+## 🔒 安全特性
+
+- **密码加密**: 使用bcrypt加密存储用户密码
+- **JWT认证**: 7天有效期的安全Token认证
+- **参数验证**: 严格的输入参数验证
+- **CORS支持**: 跨域请求安全控制
+- **SQL注入防护**: 使用GORM防止SQL注入
+
+## 📊 性能优化
+
+- **数据库连接池**: 优化数据库连接管理
+- **Gin框架**: 高性能HTTP服务
+- **响应缓存**: 静态资源缓存机制
+- **优雅降级**: 数据库连接失败时的容错处理
+
+## 🤝 贡献指南
+
+1. Fork 本仓库
+2. 创建功能分支 (`git checkout -b feature/AmazingFeature`)
+3. 提交更改 (`git commit -m 'Add some AmazingFeature'`)
+4. 推送到分支 (`git push origin feature/AmazingFeature`)
+5. 创建 Pull Request
+
+## 📝 更新日志
+
+### v1.0.0 (2024-12-13)
+- ✨ 初始版本发布
+- ✨ 完成用户认证模块
+- ✨ 实现动态发布功能
+- ✨ 添加文件上传功能
+- ✨ 集成内容搜索功能
+- 📚 完善API文档
+
+## 📞 联系方式
+
+- **开发者**: Yw332
+- **GitHub**: https://github.com/Yw332/campus-moments-go
+- **Issues**: https://github.com/Yw332/campus-moments-go/issues
+
+## 📄 许可证
+
+本项目采用 MIT 许可证 - 查看 [LICENSE](LICENSE) 文件了解详情。
