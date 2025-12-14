@@ -57,6 +57,9 @@ func main() {
 	// 6. 创建Gin应用
 	router := gin.Default()
 
+	// 添加静态文件服务 - 提供上传文件的访问
+	router.Static("/uploads", "./uploads")
+
 	// 7. 注册路由（使用内部路由注册，保证返回格式一致）
 	routes.SetupRoutes(router)
 

@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>校园动态 API 测试工具</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .header h1 { font-size: 2rem; margin-bottom: 10px; }
+        .header p { opacity: 0.9; font-size: 1.1rem; }
+        .content { padding: 30px; }
+        .section {
+            margin-bottom: 40px;
+            border: 1px solid #e5e7eb;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+        .section-header {
+            background: #f9fafb;
+            padding: 20px;
+            border-bottom: 1px solid #e5e7eb;
+        }
+        .section-header h2 { color: #374151; font-size: 1.3rem; margin-bottom: 5px; }
+        .section-header p { color: #6b7280; font-size: 0.9rem; }
+        .section-content { padding: 20px; }
+        .form-group { margin-bottom: 20px; }
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #374151;
+            font-weight: 500;
+        }
+        .form-group input, .form-group textarea, .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+        .form-group input:focus, .form-group textarea:focus, .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(102, 126, 234, 0.3); }
+        .btn-success { background: #10b981; color: white; }
+        .btn-danger { background: #ef4444; color: white; }
+        .btn-warning { background: #f59e0b; color: white; }
+        .response {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+            overflow-x: auto;
+        }
+        .response.success { background: #f0fdf4; border: 1px solid #86efac; color: #14532d; }
+        .response.error { background: #fef2f2; border: 1px solid #fca5a5; color: #7f1d1d; }
+        .response.info { background: #eff6ff; border: 1px solid #93c5fd; color: #1e3a8a; }
+        .auth-status {
+            background: #f9fafb;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #e5e7eb;
+        }
+        .auth-status.authenticated { background: #f0fdf4; border-color: #86efac; }
+        .two-columns { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 768px) { .two-columns { grid-template-columns: 1fr; } }
+        .avatar-preview {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: #f3f4f6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-top: 10px;
+            overflow: hidden;
+        }
+        .avatar-preview img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 校园动态 API 测试工具</h1>
+            <p>服务器地址: http://106.52.165.122:8080</p>
+        </div>
+
+        <div class="content">
+            <!-- 认证状态 -->
+            <div class="auth-status" id="authStatus">
+                <strong>🔐 认证状态:</strong> <span id="authText">未登录</span>
+                <button class="btn btn-danger" onclick="logout()" id="logoutBtn" style="float: right;" class="hidden">退出登录</button>
+            </div>
+
+            <!-- 用户认证 -->
+            <div class="section">
+                <div class="section-header">
+                    <h2>🔑 用户认证</h2>
+                    <p>用户注册、登录和认证相关接口</p>
+                </div>
+                <div class="section-content">
+                    <div class="two-columns">
+                        <div>
+                            <h3>用户注册</h3>
+                            <div class="form-group">
+                                <label>用户名 (3-20字符)</label>
+                                <input type="text" id="regUsername" placeholder="输入用户名">
+                            </div>
+                            <div class="form-group">
+                                <label>手机号 (11位)</label>
+                                <input type="tel" id="regPhone" placeholder="输入手机号">
+                            </div>
+                            <div class="form-group">
+                                <label>密码 (8-20字符，包含字母和数字)</label>
+                                <input type="password" id="regPassword" placeholder="输入密码">
+                            </div>
+                            <button class="btn btn-primary" onclick="register()">注册用户</button>
+                        </div>
+
+                        <div>
+                            <h3>用户登录</h3>
+                            <div class="form-group">
+                                <label>账号 (用户名或手机号)</label>
+                                <input type="text" id="loginAccount" placeholder="输入用户名或手机号" value="Yw166332">
+                            </div>
+                            <div class="form-group">
+                                <label>密码</label>
+                                <input type="password" id="loginPassword" placeholder="输入密码" value="JiangCan030">
+                            </div>
+                            <button class="btn btn-success" onclick="login()">登录</button>
+                            <button class="btn btn-primary" onclick="quickLogin()">快速登录测试账号</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 头像上传 -->
+            <div class="section">
+                <div class="section-header">
+                    <h2>📸 头像上传</h2>
+                    <p>上传和更新用户头像</p>
+                </div>
+                <div class="section-content">
+                    <div class="two-columns">
+                        <div>
+                            <h3>选择头像文件</h3>
+                            <div class="form-group">
+                                <label>头像文件 (支持: jpg, jpeg, png, gif, webp)</label>
+                                <input type="file" id="avatarFile" accept="image/*">
+                            </div>
+                            <div class="form-group">
+                                <label>头像预览</label>
+                                <div class="avatar-preview" id="avatarPreview">
+                                    <span>无头像</span>
+                                </div>
+                            </div>
+                            <button class="btn btn-primary" onclick="uploadAvatar()">上传头像</button>
+                            <button class="btn btn-success" onclick="getUserProfile()">刷新资料查看头像</button>
+                        </div>
+                        <div>
+                            <h3>当前用户资料</h3>
+                            <div id="currentUserInfo" style="padding: 15px; background: #f9fafb; border-radius: 8px;">
+                                <p>请先登录查看用户资料</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 动态管理 -->
+            <div class="section">
+                <div class="section-header">
+                    <h2>📄 动态管理</h2>
+                    <p>动态的创建、查询、更新和删除</p>
+                </div>
+                <div class="section-content">
+                    <div style="margin-bottom: 30px;">
+                        <h3>创建动态</h3>
+                        <div class="form-group">
+                            <label>动态内容</label>
+                            <textarea id="momentContent" rows="3" placeholder="分享你的想法..."></textarea>
+                        </div>
+                        <div class="form-group">
+                            <label>图片列表 (JSON数组，可选)</label>
+                            <input type="text" id="momentImages" placeholder='["image1.jpg", "image2.jpg"]'>
+                        </div>
+                        <div class="form-group">
+                            <label>可见性</label>
+                            <select id="momentPublic">
+                                <option value="true">公开</option>
+                                <option value="false">私有</option>
+                            </select>
+                        </div>
+                        <button class="btn btn-primary" onclick="createMoment()">发布动态</button>
+                    </div>
+
+                    <div>
+                        <h3>查询动态</h3>
+                        <button class="btn btn-primary" onclick="getMoments()">获取动态列表</button>
+                        <button class="btn btn-success" onclick="getMyMoments()">获取我的动态</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 响应区域 -->
+            <div id="responseContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://106.52.165.122:8080';
+        let authToken = localStorage.getItem('authToken') || '';
+
+        window.onload = function() {
+            updateAuthStatus();
+            setupAvatarPreview();
+        };
+
+        function updateAuthStatus() {
+            const authStatus = document.getElementById('authStatus');
+            const authText = document.getElementById('authText');
+            const logoutBtn = document.getElementById('logoutBtn');
+
+            if (authToken) {
+                authText.textContent = '已登录';
+                authStatus.classList.add('authenticated');
+                logoutBtn.classList.remove('hidden');
+                getUserProfile();
+            } else {
+                authText.textContent = '未登录';
+                authStatus.classList.remove('authenticated');
+                logoutBtn.classList.add('hidden');
+            }
+        }
+
+        function showResponse(data, type = 'info') {
+            const container = document.getElementById('responseContainer');
+            const responseDiv = document.createElement('div');
+            responseDiv.className = `response ${type}`;
+            responseDiv.textContent = typeof data === 'string' ? data : JSON.stringify(data, null, 2);
+            container.appendChild(responseDiv);
+            
+            setTimeout(() => {
+                responseDiv.remove();
+            }, 8000);
+        }
+
+        function getHeaders() {
+            const headers = {};
+            if (authToken) {
+                headers['Authorization'] = `Bearer ${authToken}`;
+            }
+            return headers;
+        }
+
+        async function makeRequest(url, options = {}) {
+            try {
+                const response = await fetch(API_BASE + url, {
+                    ...options,
+                    headers: {
+                        ...getHeaders(),
+                        ...options.headers
+                    }
+                });
+
+                const data = await response.json();
+                return { success: response.ok, data, status: response.status };
+            } catch (error) {
+                return { success: false, data: { message: error.message }, status: 0 };
+            }
+        }
+
+        async function login() {
+            const account = document.getElementById('loginAccount').value;
+            const password = document.getElementById('loginPassword').value;
+
+            if (!account || !password) {
+                showResponse('请输入账号和密码', 'error');
+                return;
+            }
+
+            const result = await makeRequest('/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ account, password })
+            });
+
+            if (result.success && result.data.code === 200) {
+                authToken = result.data.data.token;
+                localStorage.setItem('authToken', authToken);
+                updateAuthStatus();
+                showResponse('登录成功！', 'success');
+            } else {
+                showResponse(result.data, 'error');
+            }
+        }
+
+        async function quickLogin() {
+            const result = await makeRequest('/auth/login', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    account: 'Yw166332', 
+                    password: 'JiangCan030' 
+                })
+            });
+
+            if (result.success && result.data.code === 200) {
+                authToken = result.data.data.token;
+                localStorage.setItem('authToken', authToken);
+                updateAuthStatus();
+                showResponse('快速登录成功！', 'success');
+            } else {
+                showResponse(result.data, 'error');
+            }
+        }
+
+        function logout() {
+            authToken = '';
+            localStorage.removeItem('authToken');
+            updateAuthStatus();
+            showResponse('已退出登录', 'info');
+        }
+
+        function setupAvatarPreview() {
+            const avatarFile = document.getElementById('avatarFile');
+            const avatarPreview = document.getElementById('avatarPreview');
+
+            avatarFile.addEventListener('change', function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        avatarPreview.innerHTML = `<img src="${e.target.result}" alt="头像预览">`;
+                    };
+                    reader.readAsDataURL(file);
+                }
+            });
+        }
+
+        async function uploadAvatar() {
+            if (!authToken) {
+                showResponse('请先登录', 'error');
+                return;
+            }
+
+            const avatarFile = document.getElementById('avatarFile').files[0];
+            if (!avatarFile) {
+                showResponse('请选择头像文件', 'error');
+                return;
+            }
+
+            // 验证文件类型
+            const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
+            if (!allowedTypes.includes(avatarFile.type)) {
+                showResponse('头像文件格式不支持，支持格式：jpg, jpeg, png, gif, webp', 'error');
+                return;
+            }
+
+            // 验证文件大小 (5MB)
+            if (avatarFile.size > 5 * 1024 * 1024) {
+                showResponse('头像文件大小不能超过5MB', 'error');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('avatar', avatarFile);
+
+            try {
+                const response = await fetch(API_BASE + '/api/upload/avatar', {
+                    method: 'POST',
+                    headers: { 'Authorization': `Bearer ${authToken}` },
+                    body: formData
+                });
+
+                const result = await response.json();
+                
+                if (result.code === 200) {
+                    showResponse('头像上传成功！', 'success');
+                    // 更新用户资料显示头像
+                    getUserProfile();
+                } else {
+                    showResponse(result, 'error');
+                }
+            } catch (error) {
+                showResponse('上传失败：' + error.message, 'error');
+            }
+        }
+
+        async function getUserProfile() {
+            if (!authToken) {
+                document.getElementById('currentUserInfo').innerHTML = '<p>请先登录查看用户资料</p>';
+                return;
+            }
+
+            const result = await makeRequest('/api/users/profile');
+            
+            if (result.success && result.data.code === 200) {
+                const userInfo = result.data.data;
+                const avatarHtml = userInfo.avatar ? 
+                    `<img src="${userInfo.avatar}" style="width: 50px; height: 50px; border-radius: 50%; object-fit: cover;">` : 
+                    '<div style="width: 50px; height: 50px; background: #e5e7eb; border-radius: 50%; display: flex; align-items: center; justify-content: center;">无</div>';
+                
+                document.getElementById('currentUserInfo').innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 15px;">
+                        ${avatarHtml}
+                        <div>
+                            <p><strong>用户名:</strong> ${userInfo.username}</p>
+                            <p><strong>手机号:</strong> ${userInfo.phone}</p>
+                            <p><strong>用户ID:</strong> ${userInfo.userId}</p>
+                            ${userInfo.avatar ? `<p><strong>头像:</strong> <a href="${userInfo.avatar}" target="_blank">查看头像</a></p>` : ''}
+                        </div>
+                    </div>
+                `;
+            } else {
+                showResponse(result.data, 'error');
+            }
+        }
+
+        async function createMoment() {
+            if (!authToken) {
+                showResponse('请先登录', 'error');
+                return;
+            }
+
+            const content = document.getElementById('momentContent').value;
+            if (!content) {
+                showResponse('请输入动态内容', 'error');
+                return;
+            }
+
+            const imagesInput = document.getElementById('momentImages').value;
+            const isPublic = document.getElementById('momentPublic').value === 'true';
+            const topicsInput = document.getElementById('momentTopics').value;
+
+            let images = [];
+            if (imagesInput) {
+                try {
+                    images = JSON.parse(imagesInput);
+                } catch (e) {
+                    showResponse('图片列表格式错误，请使用JSON数组格式', 'error');
+                    return;
+                }
+            }
+
+            let topics = [];
+            if (topicsInput) {
+                topics = topicsInput.split(',').map(t => t.trim()).filter(t => t);
+            }
+
+            const result = await makeRequest('/api/moments', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    content,
+                    images,
+                    isPublic,
+                    topics
+                })
+            });
+
+            showResponse(result.data, result.success ? 'success' : 'error');
+        }
+
+        async function getMoments() {
+            const result = await makeRequest('/moments?page=1&pageSize=10');
+            showResponse(result.data, result.success ? 'success' : 'error');
+        }
+
+        async function getMyMoments() {
+            if (!authToken) {
+                showResponse('请先登录', 'error');
+                return;
+            }
+            const result = await makeRequest('/api/moments/my');
+            showResponse(result.data, result.success ? 'success' : 'error');
+        }
+
+        async function register() {
+            const username = document.getElementById('regUsername').value;
+            const phone = document.getElementById('regPhone').value;
+            const password = document.getElementById('regPassword').value;
+
+            if (!username || !phone || !password) {
+                showResponse('请填写完整的注册信息', 'error');
+                return;
+            }
+
+            const result = await makeRequest('/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, phone, password })
+            });
+
+            showResponse(result.data, result.success ? 'success' : 'error');
+        }
+    </script>
+</body>
+</html>
