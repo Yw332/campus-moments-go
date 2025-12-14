@@ -1,0 +1,119 @@
+{
+  "info": {
+    "name": "校园动态API - 头像上传测试",
+    "description": "头像上传相关API测试集合"
+  },
+  "item": [
+    {
+      "name": "用户认证",
+      "item": [
+        {
+          "name": "用户登录",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"account\": \"Yw166332\",\n  \"password\": \"JiangCan030\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "获取访问token"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// 提取token并保存到环境变量",
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.code === 200) {",
+                  "        const token = response.data.token;",
+                  "        pm.environment.set(\"authToken\", token);",
+                  "        console.log(\"Token已保存:\", token);",
+                  "        pm.collectionVariables.set(\"userId\", response.data.userInfo.userId);",
+                  "    } else {",
+                  "        console.log(\"登录失败:\", response.message);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "头像上传",
+      "item": [
+        {
+          "name": "上传头像",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "avatar",
+                  "type": "file",
+                  "src": [],
+                  "description": "选择头像文件 (支持: jpg, jpeg, png, gif, webp)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/upload/avatar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "upload", "avatar"]
+            },
+            "description": "上传用户头像"
+          }
+        }
+      ]
+    },
+    {
+      "name": "用户管理",
+      "item": [
+        {
+          "name": "获取用户资料",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "profile"]
+            },
+            "description": "获取用户资料，包含头像信息"
+          }
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://106.52.165.122:8080"
+    }
+  ]
+}
