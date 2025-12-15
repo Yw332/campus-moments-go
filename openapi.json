@@ -560,11 +560,11 @@
         "parameters": [],
         "requestBody": {
           "content": {
-            "application/x-www-form-urlencoded": {
+            "multipart/form-data": {
               "schema": {
                 "type": "object",
                 "properties": {
-                  "file": {
+                  "avatar": {
                     "format": "binary",
                     "type": "string",
                     "description": "头像图片",
@@ -572,7 +572,7 @@
                   }
                 },
                 "required": [
-                  "file"
+                  "avatar"
                 ]
               },
               "examples": {}
