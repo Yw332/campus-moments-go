@@ -15,6 +15,8 @@ campus-moments.exe
 campus-moments
 dist/
 tmp/
+bin/
+*.exe
 
 # 开发工具文件
 .vscode/
