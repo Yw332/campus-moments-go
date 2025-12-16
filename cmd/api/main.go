@@ -57,17 +57,16 @@ func main() {
 	// 6. 创建Gin应用
 	router := gin.Default()
 
-	// 添加静态文件服务 - 提供上传文件的访问
-	router.Static("/uploads", "./uploads")
+	// 7. 设置静态文件服务
+	router.Static("/static", "./uploads")
 
-	// 7. 注册路由（使用内部路由注册，保证返回格式一致）
+	// 8. 注册路由（使用内部路由注册，保证返回格式一致）
 	routes.SetupRoutes(router)
 
 	// 8. 启动服务器
 	port := config.Cfg.Server.Port
 	log.Printf("✅ Campus Moments Go 启动成功")
-	log.Printf("📡 服务器地址: http://106.52.165.122:%s", port)
-	log.Printf("🌐 本地访问: http://localhost:%s", port)
+	log.Printf("📡 访问地址: http://localhost:%s", port)
 	log.Printf("👤 GitHub: Yw332")
 	log.Printf("🗄️  数据库: %s@%s:%s/%s",
 		config.Cfg.Database.User,
@@ -75,8 +74,7 @@ func main() {
 		config.Cfg.Database.Port,
 		config.Cfg.Database.Name)
 
-	// 监听所有网络接口以支持服务器访问
-	if err := router.Run("0.0.0.0:" + port); err != nil {
+	if err := router.Run(":" + port); err != nil {
 		log.Fatal("❌ 服务器启动失败:", err)
 	}
 }

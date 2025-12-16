@@ -2,7 +2,7 @@
 
 ## 基本信息
 
-- **Base URL**: `http://106.52.165.122:8080`
+- **Base URL**: `http://localhost:8081`
 - **Content-Type**: `application/json`
 - **认证方式**: JWT Token (需要在请求头中携带 `Authorization: Bearer <token>`)
 

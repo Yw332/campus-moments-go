@@ -8,14 +8,8 @@ import (
 
 // AutoMigrate 自动迁移数据库表结构
 func AutoMigrate() {
-	db := database.GetDB()
-	
-	// 仅添加avatar字段到现有用户表
-	if err := db.AutoMigrate(&User{}); err != nil {
-		log.Printf("用户表迁移失败: %v", err)
-	} else {
-		log.Println("✅ 用户表结构更新成功")
-	}
+	// 完全跳过用户表的迁移，使用现有表结构
+	log.Println("✅ 跳过用户表迁移，使用现有表结构")
 }
 
 // CreateTables 如果表不存在则创建
