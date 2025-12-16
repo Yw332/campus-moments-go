@@ -6,18 +6,6 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// UpdateMoment 更新动态（占位实现）
-func UpdateMoment(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "UpdateMoment 未实现（占位）"})
-}
-
-// DeleteMoment 删除动态（占位实现）
-func DeleteMoment(c *gin.Context) {
-	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "DeleteMoment 未实现（占位）"})
-}
-
-
-
 // GetSearchHistory 获取搜索历史（占位实现）
 func GetSearchHistory(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "message": "GetSearchHistory 未实现（占位）", "data": []string{}})

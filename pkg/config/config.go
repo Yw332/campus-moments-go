@@ -1,4 +1,4 @@
-﻿package config
+package config
 
 import (
 "fmt"
@@ -51,18 +51,21 @@ var Cfg *Config
 
 // Init 初始化配置
 func Init() {
-// 加载.env文件 - 这里添加详细日志
-log.Println("正在加载环境变量...")
-if err := godotenv.Load(); err != nil {
-log.Printf("⚠️  godotenv加载失败: %v", err)
-log.Println("使用系统环境变量")
-} else {
-log.Println("✅ .env文件加载成功")
-}
+	// 加载.env文件 - 这里添加详细日志
+	log.Println("正在加载环境变量...")
+	if err := godotenv.Load(); err != nil {
+		log.Printf("⚠️  godotenv加载失败: %v", err)
+		log.Println("使用系统环境变量")
+	} else {
+		log.Println("✅ .env文件加载成功")
+	}
 
-// 测试读取一个环境变量
-testVal := os.Getenv("DB_HOST")
-log.Printf("测试读取DB_HOST: %s", testVal)
+	// 测试读取关键环境变量
+	portVal := os.Getenv("PORT")
+	dbHostVal := os.Getenv("DB_HOST")
+	log.Printf("关键环境变量读取结果:")
+	log.Printf("  PORT: %s", portVal)
+	log.Printf("  DB_HOST: %s", dbHostVal)
 
 Cfg = &Config{
 App: AppConfig{
@@ -71,7 +74,7 @@ Version: getEnv("APP_VERSION", "1.0.0"),
 Env:     getEnv("APP_ENV", "development"),
 },
 Server: ServerConfig{
-Port: getEnv("PORT", "3000"),
+Port: getEnv("PORT", "8080"),
 Mode: getEnv("GIN_MODE", "debug"),
 },
 Database: DatabaseConfig{

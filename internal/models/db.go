@@ -8,6 +8,19 @@ import (
 
 // AutoMigrate 自动迁移数据库表结构
 func AutoMigrate() {
+	db := database.GetDB()
+	if db == nil {
+		log.Println("⚠️  数据库未连接，跳过迁移")
+		return
+	}
+
+	// 迁移动态表
+	if err := db.AutoMigrate(&Moment{}); err != nil {
+		log.Printf("❌ 动态表迁移失败: %v", err)
+	} else {
+		log.Println("✅ 动态表迁移成功")
+	}
+
 	// 完全跳过用户表的迁移，使用现有表结构
 	log.Println("✅ 跳过用户表迁移，使用现有表结构")
 }
@@ -15,6 +28,10 @@ func AutoMigrate() {
 // CreateTables 如果表不存在则创建
 func CreateTables() {
 	db := database.GetDB()
+	if db == nil {
+		log.Println("⚠️  数据库未连接，无法创建表")
+		return
+	}
 
 	// 检查并创建用户表
 	if !db.Migrator().HasTable(&User{}) {
@@ -25,5 +42,16 @@ func CreateTables() {
 		}
 	} else {
 		log.Println("✅ 用户表已存在")
+	}
+
+	// 检查并创建动态表
+	if !db.Migrator().HasTable(&Moment{}) {
+		if err := db.AutoMigrate(&Moment{}); err != nil {
+			log.Printf("创建动态表失败: %v", err)
+		} else {
+			log.Println("✅ 动态表创建成功")
+		}
+	} else {
+		log.Println("✅ 动态表已存在")
 	}
 }

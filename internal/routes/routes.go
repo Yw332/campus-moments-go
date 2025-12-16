@@ -16,6 +16,8 @@ func SetupRoutes(router *gin.Engine) {
 	{
 		auth.POST("/register", handlers.Register)
 		auth.POST("/login", handlers.Login)
+		auth.POST("/send-verification", handlers.SendVerificationCode)
+		auth.POST("/verify-and-reset", handlers.VerifyAndResetPassword)
 	}
 
 	// 公开的动态列表（不需要登录也能看）
@@ -42,6 +44,7 @@ func SetupRoutes(router *gin.Engine) {
 			moments.GET("/:id", handlers.GetMomentDetail)
 			moments.PATCH("/:id", handlers.UpdateMoment)
 			moments.DELETE("/:id", handlers.DeleteMoment)
+			moments.GET("/my", handlers.GetUserMoments) // 获取当前用户的动态列表
 		}
 
 		// 用户相关

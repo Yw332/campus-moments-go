@@ -66,7 +66,8 @@ func main() {
 	// 8. 启动服务器
 	port := config.Cfg.Server.Port
 	log.Printf("✅ Campus Moments Go 启动成功")
-	log.Printf("📡 访问地址: http://localhost:%s", port)
+	log.Printf("📡 本地访问地址: http://localhost:%s", port)
+	log.Printf("🌐 服务器访问地址: http://106.52.165.122:%s", port)
 	log.Printf("👤 GitHub: Yw332")
 	log.Printf("🗄️  数据库: %s@%s:%s/%s",
 		config.Cfg.Database.User,
@@ -74,7 +75,7 @@ func main() {
 		config.Cfg.Database.Port,
 		config.Cfg.Database.Name)
 
-	if err := router.Run(":" + port); err != nil {
+	if err := router.Run("0.0.0.0:" + port); err != nil {
 		log.Fatal("❌ 服务器启动失败:", err)
 	}
 }

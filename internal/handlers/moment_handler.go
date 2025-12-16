@@ -3,34 +3,51 @@ package handlers
 import (
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/Yw332/campus-moments-go/internal/service"
 	"github.com/gin-gonic/gin"
 )
 
+var momentService = service.NewMomentService()
+
 // CreateMoment 发布动态
 func CreateMoment(c *gin.Context) {
-	type CreateMomentRequest struct {
-		Content string   `json:"content" binding:"required"`
-		Images  []string `json:"images"`
-	}
-
-	var req CreateMomentRequest
-	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+	// 获取当前用户ID
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"code":    401,
+			"message": "未认证",
+			"data":    nil,
+		})
 		return
 	}
 
-	// TODO: 保存到数据库
+	var req service.CreateMomentRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    400,
+			"message": err.Error(),
+			"data":    nil,
+		})
+		return
+	}
+
+	uid, _ := userID.(int64)
+	moment, err := momentService.CreateMoment(uid, &req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"code":    500,
+			"message": err.Error(),
+			"data":    nil,
+		})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
-		"code":    0,
+		"code":    200,
 		"message": "发布成功",
-		"data": gin.H{
-			"id":      123,
-			"content": req.Content,
-			"images":  req.Images,
-		},
+		"data":    moment,
 	})
 }
 
@@ -38,29 +55,22 @@ func CreateMoment(c *gin.Context) {
 func GetMoments(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
-	// 调用 service 层获取真实数据
-	list, total, err := service.ListMoments(page, pageSize)
+	
+	// 支持按用户ID筛选
+	var userID *int64
+	if uidStr := c.Query("userId"); uidStr != "" {
+		if uid, err := strconv.ParseInt(uidStr, 10, 64); err == nil {
+			userID = &uid
+		}
+	}
+
+	list, total, err := momentService.ListMoments(page, pageSize, userID)
 	if err != nil {
-		// 如果数据库不可用或查询失败，回退到示例数据以保持接口可用
 		c.JSON(http.StatusOK, gin.H{
-			"code":    0,
+			"code":    200,
 			"message": "success",
 			"data": gin.H{
-				"list": []gin.H{
-					{
-						"id":      1,
-						"content": "今天天气真好！",
-						"images":  []string{"https://example.com/1.jpg"},
-						"author": gin.H{
-							"id":       1,
-							"username": "张三",
-							"avatar":   "https://example.com/avatar.jpg",
-						},
-						"likeCount":    10,
-						"commentCount": 5,
-						"createdAt":    time.Now().Format("2006-01-02 15:04:05"),
-					},
-				},
+				"list": []gin.H{},
 				"pagination": gin.H{
 					"page":     page,
 					"pageSize": pageSize,
@@ -72,7 +82,7 @@ func GetMoments(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"code":    0,
+		"code":    200,
 		"message": "success",
 		"data": gin.H{
 			"list": list,
@@ -87,14 +97,192 @@ func GetMoments(c *gin.Context) {
 
 // GetMomentDetail 获取动态详情
 func GetMomentDetail(c *gin.Context) {
-	id := c.Param("id")
-	// TODO: 从数据库查询详情
+	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    400,
+			"message": "无效的动态ID",
+			"data":    nil,
+		})
+		return
+	}
+
+	moment, err := momentService.GetMomentByID(id)
+	if err != nil {
+		if err.Error() == "动态不存在" {
+			c.JSON(http.StatusNotFound, gin.H{
+				"code":    404,
+				"message": "动态不存在",
+				"data":    nil,
+			})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"code":    500,
+				"message": err.Error(),
+				"data":    nil,
+			})
+		}
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
-		"code":    0,
+		"code":    200,
+		"message": "success",
+		"data":    moment,
+	})
+}
+
+// UpdateMoment 更新动态（部分更新）
+func UpdateMoment(c *gin.Context) {
+	// 获取当前用户ID
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"code":    401,
+			"message": "未认证",
+			"data":    nil,
+		})
+		return
+	}
+
+	momentID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    400,
+			"message": "无效的动态ID",
+			"data":    nil,
+		})
+		return
+	}
+
+	var req service.UpdateMomentRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    400,
+			"message": err.Error(),
+			"data":    nil,
+		})
+		return
+	}
+
+	uid, _ := userID.(int64)
+	moment, err := momentService.UpdateMoment(uid, momentID, &req)
+	if err != nil {
+		statusCode := http.StatusInternalServerError
+		message := err.Error()
+		
+		if err.Error() == "动态不存在或无权限修改" {
+			statusCode = http.StatusNotFound
+		}
+		
+		c.JSON(statusCode, gin.H{
+			"code":    statusCode,
+			"message": message,
+			"data":    nil,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"code":    200,
+		"message": "更新成功",
+		"data":    moment,
+	})
+}
+
+// DeleteMoment 删除动态
+func DeleteMoment(c *gin.Context) {
+	// 获取当前用户ID
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"code":    401,
+			"message": "未认证",
+			"data":    nil,
+		})
+		return
+	}
+
+	momentID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    400,
+			"message": "无效的动态ID",
+			"data":    nil,
+		})
+		return
+	}
+
+	uid, _ := userID.(int64)
+	if err := momentService.DeleteMoment(uid, momentID); err != nil {
+		statusCode := http.StatusInternalServerError
+		message := err.Error()
+		
+		if err.Error() == "动态不存在或无权限删除" {
+			statusCode = http.StatusNotFound
+		}
+		
+		c.JSON(statusCode, gin.H{
+			"code":    statusCode,
+			"message": message,
+			"data":    nil,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"code":    200,
+		"message": "删除成功",
+		"data": gin.H{
+			"postId": momentID,
+		},
+	})
+}
+
+// GetUserMoments 获取当前用户的所有动态
+func GetUserMoments(c *gin.Context) {
+	// 获取当前用户ID
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"code":    401,
+			"message": "未认证",
+			"data":    nil,
+		})
+		return
+	}
+
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
+
+	uid, _ := userID.(int64)
+	list, total, err := momentService.GetUserMoments(uid, page, pageSize)
+	if err != nil {
+		c.JSON(http.StatusOK, gin.H{
+			"code":    200,
+			"message": "success",
+			"data": gin.H{
+				"list": []gin.H{},
+				"pagination": gin.H{
+					"page":     page,
+					"pageSize": pageSize,
+					"total":    0,
+				},
+			},
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"code":    200,
 		"message": "success",
 		"data": gin.H{
-			"id":      id,
-			"content": "动态详情内容...",
+			"list": list,
+			"pagination": gin.H{
+				"page":     page,
+				"pageSize": pageSize,
+				"total":    total,
+			},
 		},
 	})
 }

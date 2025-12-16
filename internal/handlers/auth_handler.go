@@ -1,6 +1,9 @@
 package handlers
 
 import (
+	"fmt"
+	"log"
+	"math/rand"
 	"net/http"
 	"strings"
 	"time"
@@ -196,6 +199,122 @@ func ChangePassword(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"code":    200,
 		"message": "密码修改成功",
+		"data":    nil,
+	})
+}
+
+// UpdateUserProfile 更新用户资料
+func UpdateUserProfile(c *gin.Context) {
+	// 获取当前用户ID
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"code":    401,
+			"message": "未认证",
+			"data":    nil,
+		})
+		return
+	}
+
+	uid, _ := userID.(int64)
+	
+	// 临时实现，实际应该从请求体获取数据
+	c.JSON(http.StatusOK, gin.H{
+		"code":    200,
+		"message": "更新成功",
+		"data": gin.H{
+			"userID": uid,
+			"updated": true,
+		},
+	})
+}
+
+// SendVerificationCode 发送验证码
+func SendVerificationCode(c *gin.Context) {
+	var req struct {
+		Phone string `json:"phone" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    400,
+			"message": "手机号不能为空",
+			"data":    nil,
+		})
+		return
+	}
+
+	// 验证手机号格式
+	if len(req.Phone) != 11 || req.Phone[0:1] != "1" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    400,
+			"message": "手机号格式不正确",
+			"data":    nil,
+		})
+		return
+	}
+
+	// 生成6位验证码
+	verificationCode := fmt.Sprintf("%06d", rand.Intn(1000000))
+	
+	// 存储验证码（这里使用内存存储，生产环境建议使用Redis）
+	// verificationCodes[req.Phone] = VerificationCode{
+	// 	Code:      verificationCode,
+	// 	ExpiresAt: time.Now().Add(5 * time.Minute),
+	// }
+
+	// 模拟发送短信
+	log.Printf("验证码已发送至 %s: %s", req.Phone, verificationCode)
+
+	c.JSON(http.StatusOK, gin.H{
+		"code":    200,
+		"message": "验证码发送成功",
+		"data": gin.H{
+			"phone":       req.Phone,
+			"expiresIn":   300, // 5分钟
+			"resendAfter": 60,  // 1分钟后可重发
+		},
+	})
+}
+
+// VerifyAndResetPassword 验证验证码并重置密码
+func VerifyAndResetPassword(c *gin.Context) {
+	var req struct {
+		Phone           string `json:"phone" binding:"required"`
+		VerificationCode string `json:"verificationCode" binding:"required"`
+		NewPassword     string `json:"newPassword" binding:"required,min=6"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    400,
+			"message": "参数错误: " + err.Error(),
+			"data":    nil,
+		})
+		return
+	}
+
+	// 临时实现：演示用，实际应该验证存储的验证码
+	// 生产环境需要验证：
+	// 1. 验证码是否存在
+	// 2. 验证码是否正确
+	// 3. 验证码是否过期
+	// 4. 手机号对应的用户是否存在
+
+	// 模拟验证成功
+	// 如果验证码正确，重置密码
+	// if err := authService.ResetPasswordByPhone(req.Phone, req.NewPassword); err != nil {
+	//     c.JSON(http.StatusBadRequest, gin.H{
+	//         "code":    400,
+	//         "message": "重置密码失败",
+	//         "data":    nil,
+	//     })
+	//     return
+	// }
+
+	c.JSON(http.StatusOK, gin.H{
+		"code":    200,
+		"message": "密码重置成功",
 		"data":    nil,
 	})
 }
