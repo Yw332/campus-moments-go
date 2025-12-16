@@ -23,6 +23,27 @@ func AutoMigrate() {
 
 	// 完全跳过用户表的迁移，使用现有表结构
 	log.Println("✅ 跳过用户表迁移，使用现有表结构")
+
+	// 迁移验证码相关表
+	if err := db.AutoMigrate(&VerificationCode{}); err != nil {
+		log.Printf("❌ 验证码表迁移失败: %v", err)
+	} else {
+		log.Println("✅ 验证码表迁移成功")
+	}
+
+	// 迁移搜索历史表
+	if err := db.AutoMigrate(&SearchHistory{}); err != nil {
+		log.Printf("❌ 搜索历史表迁移失败: %v", err)
+	} else {
+		log.Println("✅ 搜索历史表迁移成功")
+	}
+
+	// 迁移重置密码日志表
+	if err := db.AutoMigrate(&ResetPasswordLog{}); err != nil {
+		log.Printf("❌ 重置密码日志表迁移失败: %v", err)
+	} else {
+		log.Println("✅ 重置密码日志表迁移成功")
+	}
 }
 
 // CreateTables 如果表不存在则创建

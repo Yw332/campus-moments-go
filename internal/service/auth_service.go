@@ -111,8 +111,6 @@ func (s *AuthService) Register(req *RegisterRequest) (*models.User, error) {
 		return nil, errors.New("手机号已注册")
 	}
 
-
-
 	// 密码加密
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(req.Password), bcrypt.DefaultCost)
 	if err != nil {
@@ -229,6 +227,21 @@ func (s *AuthService) GetUserByID(userID int64) (*models.User, error) {
 	return &user, nil
 }
 
+// GetUserByIDStr 根据字符串ID获取用户
+func (s *AuthService) GetUserByIDStr(userIDStr string) (*models.User, error) {
+	db := database.GetDB()
+	var user models.User
+
+	if err := db.Where("id = ? AND status = 1", userIDStr).First(&user).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return nil, errors.New("用户不存在")
+		}
+		return nil, fmt.Errorf("查询用户失败: %v", err)
+	}
+
+	return &user, nil
+}
+
 // UpdatePassword 更新密码
 func (s *AuthService) UpdatePassword(userID int64, oldPassword, newPassword string) error {
 	// 验证新密码强度
@@ -240,6 +253,42 @@ func (s *AuthService) UpdatePassword(userID int64, oldPassword, newPassword stri
 	var user models.User
 
 	if err := db.Where("id = ?", userID).First(&user).Error; err != nil {
+		return errors.New("用户不存在")
+	}
+
+	// 验证旧密码
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(oldPassword)); err != nil {
+		return errors.New("原密码错误")
+	}
+
+	// 加密新密码
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return fmt.Errorf("密码加密失败: %v", err)
+	}
+
+	// 更新密码
+	user.Password = string(hashedPassword)
+	user.UpdatedAt = time.Now()
+
+	if err := db.Save(&user).Error; err != nil {
+		return fmt.Errorf("更新密码失败: %v", err)
+	}
+
+	return nil
+}
+
+// UpdatePasswordStr 更新密码（字符串ID版本）
+func (s *AuthService) UpdatePasswordStr(userIDStr, oldPassword, newPassword string) error {
+	// 验证新密码强度
+	if err := validatePassword(newPassword); err != nil {
+		return err
+	}
+
+	db := database.GetDB()
+	var user models.User
+
+	if err := db.Where("id = ?", userIDStr).First(&user).Error; err != nil {
 		return errors.New("用户不存在")
 	}
 

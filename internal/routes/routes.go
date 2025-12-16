@@ -62,6 +62,7 @@ func SetupRoutes(router *gin.Engine) {
 			search.GET("/history", handlers.GetSearchHistory)
 			search.GET("/filter", handlers.GetFilteredContent)
 			search.POST("/history", handlers.SaveSearchHistory)
+			search.GET("/suggestions", handlers.GetSearchSuggestions) // 搜索建议
 			search.GET("", handlers.SearchContent) // GET /search?keyword=xxx
 		}
 	}

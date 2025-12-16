@@ -1,9 +1,6 @@
 package handlers
 
 import (
-	"fmt"
-	"log"
-	"math/rand"
 	"net/http"
 	"strings"
 	"time"
@@ -15,6 +12,7 @@ import (
 )
 
 var authService = service.NewAuthService()
+var verificationService = service.NewVerificationService()
 
 // Register 用户注册
 func Register(c *gin.Context) {
@@ -137,8 +135,8 @@ func GetProfile(c *gin.Context) {
 		return
 	}
 
-	uid, _ := userID.(int64)
-	user, err := authService.GetUserByID(uid)
+	uid := userID.(string)
+	user, err := authService.GetUserByIDStr(uid)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"code":    404,
@@ -186,8 +184,8 @@ func ChangePassword(c *gin.Context) {
 		return
 	}
 
-	uid, _ := userID.(int64)
-	if err := authService.UpdatePassword(uid, req.OldPassword, req.NewPassword); err != nil {
+	uid := userID.(string)
+	if err := authService.UpdatePasswordStr(uid, req.OldPassword, req.NewPassword); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code":    400,
 			"message": err.Error(),
@@ -216,7 +214,7 @@ func UpdateUserProfile(c *gin.Context) {
 		return
 	}
 
-	uid, _ := userID.(int64)
+	uid := userID.(string)
 	
 	// 临时实现，实际应该从请求体获取数据
 	c.JSON(http.StatusOK, gin.H{
@@ -244,27 +242,15 @@ func SendVerificationCode(c *gin.Context) {
 		return
 	}
 
-	// 验证手机号格式
-	if len(req.Phone) != 11 || req.Phone[0:1] != "1" {
+	// 发送验证码
+	if err := verificationService.SendVerificationCode(req.Phone, "reset_password"); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code":    400,
-			"message": "手机号格式不正确",
+			"message": err.Error(),
 			"data":    nil,
 		})
 		return
 	}
-
-	// 生成6位验证码
-	verificationCode := fmt.Sprintf("%06d", rand.Intn(1000000))
-	
-	// 存储验证码（这里使用内存存储，生产环境建议使用Redis）
-	// verificationCodes[req.Phone] = VerificationCode{
-	// 	Code:      verificationCode,
-	// 	ExpiresAt: time.Now().Add(5 * time.Minute),
-	// }
-
-	// 模拟发送短信
-	log.Printf("验证码已发送至 %s: %s", req.Phone, verificationCode)
 
 	c.JSON(http.StatusOK, gin.H{
 		"code":    200,
@@ -294,23 +280,25 @@ func VerifyAndResetPassword(c *gin.Context) {
 		return
 	}
 
-	// 临时实现：演示用，实际应该验证存储的验证码
-	// 生产环境需要验证：
-	// 1. 验证码是否存在
-	// 2. 验证码是否正确
-	// 3. 验证码是否过期
-	// 4. 手机号对应的用户是否存在
+	// 1. 验证验证码
+	if err := verificationService.VerifyCode(req.Phone, req.VerificationCode, "reset_password"); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    400,
+			"message": err.Error(),
+			"data":    nil,
+		})
+		return
+	}
 
-	// 模拟验证成功
-	// 如果验证码正确，重置密码
-	// if err := authService.ResetPasswordByPhone(req.Phone, req.NewPassword); err != nil {
-	//     c.JSON(http.StatusBadRequest, gin.H{
-	//         "code":    400,
-	//         "message": "重置密码失败",
-	//         "data":    nil,
-	//     })
-	//     return
-	// }
+	// 2. 重置密码
+	if err := verificationService.ResetPasswordByPhone(req.Phone, req.NewPassword); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    400,
+			"message": err.Error(),
+			"data":    nil,
+		})
+		return
+	}
 
 	c.JSON(http.StatusOK, gin.H{
 		"code":    200,
