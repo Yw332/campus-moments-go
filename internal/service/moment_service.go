@@ -39,7 +39,7 @@ type UpdateMomentRequest struct {
 }
 
 // CreateMoment 创建动态
-func (s *MomentService) CreateMoment(userID int64, req *CreateMomentRequest) (*models.Moment, error) {
+func (s *MomentService) CreateMoment(userID string, req *CreateMomentRequest) (*models.Moment, error) {
 	if s.db == nil {
 		return nil, errors.New("数据库未连接")
 	}
@@ -88,7 +88,7 @@ func (s *MomentService) GetMomentByID(id int64) (*models.Moment, error) {
 }
 
 // ListMoments 获取动态列表（支持分页）
-func (s *MomentService) ListMoments(page, pageSize int, userID *int64) ([]models.Moment, int64, error) {
+func (s *MomentService) ListMoments(page, pageSize int, userID *string) ([]models.Moment, int64, error) {
 	if s.db == nil {
 		return nil, 0, errors.New("数据库未连接")
 	}
@@ -132,7 +132,7 @@ func (s *MomentService) ListMoments(page, pageSize int, userID *int64) ([]models
 }
 
 // UpdateMoment 更新动态
-func (s *MomentService) UpdateMoment(userID, momentID int64, req *UpdateMomentRequest) (*models.Moment, error) {
+func (s *MomentService) UpdateMoment(userID string, momentID int64, req *UpdateMomentRequest) (*models.Moment, error) {
 	if s.db == nil {
 		return nil, errors.New("数据库未连接")
 	}
@@ -178,7 +178,7 @@ func (s *MomentService) UpdateMoment(userID, momentID int64, req *UpdateMomentRe
 }
 
 // DeleteMoment 删除动态（软删除）
-func (s *MomentService) DeleteMoment(userID, momentID int64) error {
+func (s *MomentService) DeleteMoment(userID string, momentID int64) error {
 	if s.db == nil {
 		return errors.New("数据库未连接")
 	}
@@ -205,6 +205,6 @@ func (s *MomentService) DeleteMoment(userID, momentID int64) error {
 }
 
 // GetUserMoments 获取用户的所有动态
-func (s *MomentService) GetUserMoments(userID int64, page, pageSize int) ([]models.Moment, int64, error) {
+func (s *MomentService) GetUserMoments(userID string, page, pageSize int) ([]models.Moment, int64, error) {
 	return s.ListMoments(page, pageSize, &userID)
 }

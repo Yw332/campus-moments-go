@@ -10,7 +10,7 @@ import (
 type Moment struct {
 	ID           int64           `json:"id" gorm:"primaryKey;autoIncrement"`
 	Content      string          `json:"content" gorm:"type:text;not null"`
-	AuthorID     int64           `json:"authorId" gorm:"not null;index"`
+	AuthorID     string          `json:"authorId" gorm:"type:char(10);not null;index"`
 	Tags         Tags            `json:"tags" gorm:"type:json"`
 	Media        MediaItems      `json:"media" gorm:"type:json"`
 	Visibility   int             `json:"visibility" gorm:"default:0;comment:0公开/1好友/2私密"`

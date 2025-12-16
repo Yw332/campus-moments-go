@@ -1,0 +1,819 @@
+{
+  "info": {
+    "_postman_id": "b8e3f2a7-4c5d-4b8e-9f1a-2d6e7f8a9b0c",
+    "name": "Campus Moments - 完整API集合",
+    "description": "校园动态平台 - 完整功能接口文档（含现有功能+授权登录+搜索系统）",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "用户认证模块",
+      "item": [
+        {
+          "name": "用户登录",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "// 提取token并保存到环境变量",
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.code === 200) {",
+                  "        const token = response.data.token;",
+                  "        pm.environment.set(\"authToken\", token);",
+                  "        console.log(\"Token已保存:\", token);",
+                  "    }",
+                  "}",
+                  ""
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"account\": \"17875242005\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            },
+            "description": "用户登录获取访问token"
+          },
+          "response": []
+        },
+        {
+          "name": "用户注册",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"17875242005\",\n  \"password\": \"password123\",\n  \"username\": \"testuser\",\n  \"nickname\": \"测试用户\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            },
+            "description": "用户注册"
+          },
+          "response": []
+        },
+        {
+          "name": "发送验证码",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"17875242005\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/send-verification",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "send-verification"]
+            },
+            "description": "忘记密码 - 发送手机验证码"
+          },
+          "response": []
+        },
+        {
+          "name": "验证并重置密码",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"phone\": \"17875242005\",\n  \"verificationCode\": \"123456\",\n  \"newPassword\": \"newpassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/verify-and-reset",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "verify-and-reset"]
+            },
+            "description": "验证手机号和验证码，重置密码"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🆕 授权登录系统",
+      "item": [
+        {
+          "name": "获取第三方登录授权URL",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/oauth/:provider/url",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "oauth", ":provider", "url"]
+            },
+            "description": "获取第三方登录授权URL\n\n支持的平台：\n- wechat: 微信\n- qq: QQ\n- weibo: 微博\n- github: GitHub"
+          },
+          "response": []
+        },
+        {
+          "name": "第三方登录回调处理",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/oauth/:provider/callback?code=:code&state=:state",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "oauth", ":provider", "callback"],
+              "query": [
+                {
+                  "key": "code",
+                  "value": ":code",
+                  "description": "授权码"
+                },
+                {
+                  "key": "state",
+                  "value": ":state",
+                  "description": "状态参数"
+                }
+              ]
+            },
+            "description": "处理第三方登录回调"
+          },
+          "response": []
+        },
+        {
+          "name": "绑定第三方账号",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider\": \"wechat\",\n  \"openid\": \"ox1234567890abcdef\",\n  \"unionid\": \"ux1234567890abcdef\",\n  \"nickname\": \"用户昵称\",\n  \"avatar\": \"https://thirdwx.qlogo.cn/avatar.jpg\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/bind-third-party",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "bind-third-party"]
+            },
+            "description": "用户绑定第三方账号到已有账号"
+          },
+          "response": []
+        },
+        {
+          "name": "解绑第三方账号",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"provider\": \"wechat\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/unbind-third-party",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "unbind-third-party"]
+            },
+            "description": "用户解绑第三方账号"
+          },
+          "response": []
+        },
+        {
+          "name": "获取用户绑定的第三方账号",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/auth/third-party-bindings",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "auth", "third-party-bindings"]
+            },
+            "description": "获取用户已绑定的第三方账号列表"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "用户资料模块",
+      "item": [
+        {
+          "name": "获取用户资料",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/users/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "profile"]
+            },
+            "description": "获取当前用户资料"
+          },
+          "response": []
+        },
+        {
+          "name": "更新用户资料",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nickname\": \"新昵称\",\n  \"bio\": \"个人简介\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "profile"]
+            },
+            "description": "更新用户资料"
+          },
+          "response": []
+        },
+        {
+          "name": "修改密码",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"oldPassword\": \"oldpassword\",\n  \"newPassword\": \"newpassword123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/users/password",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "users", "password"]
+            },
+            "description": "修改登录密码"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "文件上传模块",
+      "item": [
+        {
+          "name": "上传头像",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "avatar",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/upload/avatar",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "upload", "avatar"]
+            },
+            "description": "上传用户头像文件"
+          },
+          "response": []
+        },
+        {
+          "name": "通用文件上传",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": ""
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/upload/file",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "upload", "file"]
+            },
+            "description": "通用文件上传接口"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "动态内容管理",
+      "item": [
+        {
+          "name": "发布动态",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"今天天气真好！\",\n  \"tags\": [\"日常\", \"心情\", \"校园\"],\n  \"visibility\": 0,\n  \"media\": [\n    {\n      \"type\": \"image\",\n      \"url\": \"http://example.com/image.jpg\",\n      \"description\": \"图片描述\"\n    }\n  ]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/moments",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "moments"]
+            },
+            "description": "发布新动态（支持多标签）"
+          },
+          "response": []
+        },
+        {
+          "name": "获取动态列表",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/moments?page=:page&pageSize=:pageSize&userId=:userId",
+              "host": ["{{baseUrl}}"],
+              "path": ["moments"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "页码，默认1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10",
+                  "description": "每页数量，默认10"
+                },
+                {
+                  "key": "userId",
+                  "value": ":userId",
+                  "description": "指定用户ID（可选）"
+                }
+              ]
+            },
+            "description": "获取动态列表"
+          },
+          "response": []
+        },
+        {
+          "name": "获取我的动态列表",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/moments/my?page=1&pageSize=10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "moments", "my"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "页码，默认1"
+                },
+                {
+                  "key": "pageSize",
+                  "value": "10",
+                  "description": "每页数量，默认10"
+                }
+              ]
+            },
+            "description": "获取当前用户发布的所有动态"
+          },
+          "response": []
+        },
+        {
+          "name": "获取动态详情",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/moments/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "moments", ":id"]
+            },
+            "description": "获取指定动态的详细信息"
+          },
+          "response": []
+        },
+        {
+          "name": "编辑动态",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"content\": \"修改后的动态内容\",\n  \"tags\": [\"修改\", \"标签\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/moments/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "moments", ":id"]
+            },
+            "description": "编辑用户发布的动态"
+          },
+          "response": []
+        },
+        {
+          "name": "删除动态",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/moments/:id",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "moments", ":id"]
+            },
+            "description": "删除用户发布的动态"
+          },
+          "response": []
+        }
+      ]
+    },
+    {
+      "name": "🔍 搜索系统（升级版）",
+      "item": [
+        {
+          "name": "搜索内容",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/search?keyword=:keyword&type=all&page=1&limit=20&sort=relevance",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "search"],
+              "query": [
+                {
+                  "key": "keyword",
+                  "value": ":keyword",
+                  "description": "搜索关键词"
+                },
+                {
+                  "key": "type",
+                  "value": "all",
+                  "description": "搜索类型：moments(动态)、users(用户)、tags(标签)、all(全部)"
+                },
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "页码，默认1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "每页数量，默认20，最大100"
+                },
+                {
+                  "key": "sort",
+                  "value": "relevance",
+                  "description": "排序方式：latest(最新)、hot(热门)、relevance(相关度)"
+                }
+              ]
+            },
+            "description": "根据关键词搜索相关内容（支持类型筛选和排序）"
+          },
+          "response": []
+        },
+        {
+          "name": "获取热门关键词",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/search/hot-words?limit=10&period=week",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "search", "hot-words"],
+              "query": [
+                {
+                  "key": "limit",
+                  "value": "10",
+                  "description": "返回数量，默认10，最大50"
+                },
+                {
+                  "key": "period",
+                  "value": "week",
+                  "description": "时间周期：today(今天)、week(本周)、month(本月)"
+                }
+              ]
+            },
+            "description": "获取大数据统计的搜索热词"
+          },
+          "response": []
+        },
+        {
+          "name": "🆕 获取搜索建议",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/search/suggestions?q=:query&limit=5",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "search", "suggestions"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": ":query",
+                  "description": "查询前缀"
+                },
+                {
+                  "key": "limit",
+                  "value": "5",
+                  "description": "建议数量，默认5，最大10"
+                }
+              ]
+            },
+            "description": "根据输入前缀提供实时搜索建议"
+          },
+          "response": []
+        },
+        {
+          "name": "获取搜索历史",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/search/history?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "search", "history"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1",
+                  "description": "页码，默认1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20",
+                  "description": "每页数量，默认20"
+                }
+              ]
+            },
+            "description": "获取用户的搜索历史记录"
+          },
+          "response": []
+        },
+        {
+          "name": "保存搜索历史",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"keyword\": \"搜索关键词\",\n  \"type\": \"moments\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/search/history",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "search", "history"]
+            },
+            "description": "保存用户搜索记录"
+          },
+          "response": []
+        },
+        {
+          "name": "🆕 删除搜索历史",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"keyword\": \"搜索关键词\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/search/history",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "search", "history"]
+            },
+            "description": "删除指定关键词的搜索历史"
+          },
+          "response": []
+        },
+        {
+          "name": "🆕 清空搜索历史",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/search/history/all",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "search", "history", "all"]
+            },
+            "description": "清空用户的所有搜索历史"
+          },
+          "response": []
+        },
+        {
+          "name": "内容过滤搜索",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{authToken}}"
+              }
+            ],
+            "url": {
+              "raw": "{{baseUrl}}/api/search/filter?tags=:tags&dateFrom=:dateFrom&dateTo=:dateTo&userId=:userId",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "search", "filter"],
+              "query": [
+                {
+                  "key": "tags",
+                  "value": ":tags",
+                  "description": "标签筛选，多个用逗号分隔"
+                },
+                {
+                  "key": "dateFrom",
+                  "value": ":dateFrom",
+                  "description": "开始日期 YYYY-MM-DD"
+                },
+                {
+                  "key": "dateTo",
+                  "value": ":dateTo",
+                  "description": "结束日期 YYYY-MM-DD"
+                },
+                {
+                  "key": "userId",
+                  "value": ":userId",
+                  "description": "用户ID筛选"
+                }
+              ]
+            },
+            "description": "按标签、日期、用户等条件过滤搜索内容"
+          },
+          "response": []
+        }
+      ]
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://106.52.165.122:8080",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "your_jwt_token_here",
+      "type": "string"
+    }
+  ]
+}

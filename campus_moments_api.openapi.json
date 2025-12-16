@@ -1,0 +1,1454 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "Campus Moments API",
+    "description": "校园动态平台 - 完整功能接口文档",
+    "version": "1.0.0",
+    "contact": {
+      "name": "API Support",
+      "url": "http://106.52.165.122:8080"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://106.52.165.122:8080",
+      "description": "生产服务器"
+    },
+    {
+      "url": "http://localhost:8080",
+      "description": "本地开发服务器"
+    }
+  ],
+  "tags": [
+    {
+      "name": "系统",
+      "description": "系统相关接口"
+    },
+    {
+      "name": "认证",
+      "description": "用户认证相关接口"
+    },
+    {
+      "name": "授权登录",
+      "description": "第三方授权登录接口"
+    },
+    {
+      "name": "用户",
+      "description": "用户资料管理接口"
+    },
+    {
+      "name": "文件",
+      "description": "文件上传相关接口"
+    },
+    {
+      "name": "动态",
+      "description": "动态内容管理接口"
+    },
+    {
+      "name": "搜索",
+      "description": "搜索相关接口"
+    }
+  ],
+  "paths": {
+    "/health": {
+      "get": {
+        "tags": ["系统"],
+        "summary": "健康检查",
+        "description": "检查系统服务与数据库连接是否正常",
+        "responses": {
+          "200": {
+            "description": "服务正常",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                },
+                "example": {
+                  "code": 200,
+                  "message": "ok",
+                  "data": {
+                    "service": "Campus Moments Go API",
+                    "database": "connected"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/": {
+      "get": {
+        "tags": ["系统"],
+        "summary": "根路径 - 服务信息",
+        "description": "API 服务根路径，返回状态信息",
+        "responses": {
+          "200": {
+            "description": "服务信息",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                },
+                "example": {
+                  "code": 200,
+                  "message": "Campus Moments Go API 运行中",
+                  "data": {
+                    "version": "1.0.0",
+                    "status": "healthy"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/register": {
+      "post": {
+        "tags": ["认证"],
+        "summary": "用户注册",
+        "description": "用户注册新账号",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/RegisterRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "注册成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": ["认证"],
+        "summary": "用户登录",
+        "description": "用户登录获取访问token",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoginRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "登录成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/logout": {
+      "post": {
+        "tags": ["认证"],
+        "summary": "退出登录",
+        "description": "用户主动退出登录，使令牌失效",
+        "security": [{"BearerAuth": []}],
+        "responses": {
+          "200": {
+            "description": "退出成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                },
+                "example": {
+                  "code": 200,
+                  "message": "退出成功",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/send-verification": {
+      "post": {
+        "tags": ["认证"],
+        "summary": "发送验证码",
+        "description": "忘记密码 - 发送手机验证码",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SendVerificationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "验证码发送成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                },
+                "example": {
+                  "code": 200,
+                  "message": "验证码发送成功",
+                  "data": {
+                    "phone": "17875242005",
+                    "expiresIn": 300,
+                    "resendAfter": 60
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/verify-and-reset": {
+      "post": {
+        "tags": ["认证"],
+        "summary": "验证并重置密码",
+        "description": "验证手机号和验证码，重置密码",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ResetPasswordRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "密码重置成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                },
+                "example": {
+                  "code": 200,
+                  "message": "密码重置成功",
+                  "data": null
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/oauth/{provider}/url": {
+      "get": {
+        "tags": ["授权登录"],
+        "summary": "获取第三方登录授权URL",
+        "description": "获取第三方登录授权URL\n\n支持的平台：\n- wechat: 微信\n- qq: QQ\n- weibo: 微博\n- github: GitHub",
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["wechat", "qq", "weibo", "github"]
+            },
+            "description": "第三方平台标识"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "获取成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                },
+                "example": {
+                  "code": 200,
+                  "message": "获取成功",
+                  "data": {
+                    "authUrl": "https://open.weixin.qq.com/connect/qrconnect?appid=xxx&redirect_uri=xxx",
+                    "state": "random_state_string"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/oauth/{provider}/callback": {
+      "get": {
+        "tags": ["授权登录"],
+        "summary": "第三方登录回调处理",
+        "description": "处理第三方登录回调",
+        "parameters": [
+          {
+            "name": "provider",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": ["wechat", "qq", "weibo", "github"]
+            }
+          },
+          {
+            "name": "code",
+            "in": "query",
+            "required": true,
+            "schema": {"type": "string"},
+            "description": "授权码"
+          },
+          {
+            "name": "state",
+            "in": "query",
+            "required": true,
+            "schema": {"type": "string"},
+            "description": "状态参数"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "登录成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/bind-third-party": {
+      "post": {
+        "tags": ["授权登录"],
+        "summary": "绑定第三方账号",
+        "description": "用户绑定第三方账号到已有账号",
+        "security": [{"BearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BindThirdPartyRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "绑定成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/unbind-third-party": {
+      "delete": {
+        "tags": ["授权登录"],
+        "summary": "解绑第三方账号",
+        "description": "用户解绑第三方账号",
+        "security": [{"BearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UnbindThirdPartyRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "解绑成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/auth/third-party-bindings": {
+      "get": {
+        "tags": ["授权登录"],
+        "summary": "获取用户绑定的第三方账号",
+        "description": "获取用户已绑定的第三方账号列表",
+        "security": [{"BearerAuth": []}],
+        "responses": {
+          "200": {
+            "description": "获取成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                },
+                "example": {
+                  "code": 200,
+                  "message": "获取成功",
+                  "data": [
+                    {
+                      "provider": "wechat",
+                      "openid": "ox1234567890abcdef",
+                      "nickname": "微信用户",
+                      "avatar": "https://thirdwx.qlogo.cn/avatar.jpg",
+                      "bindTime": "2023-12-16T14:30:00Z"
+                    }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/profile": {
+      "get": {
+        "tags": ["用户"],
+        "summary": "获取用户资料",
+        "description": "获取当前用户资料",
+        "security": [{"BearerAuth": []}],
+        "responses": {
+          "200": {
+            "description": "获取成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                },
+                "example": {
+                  "code": 200,
+                  "message": "获取成功",
+                  "data": {
+                    "id": 1,
+                    "username": "test_user",
+                    "nickname": "测试用户",
+                    "avatar": "http://106.52.165.122:8080/static/avatars/xxx.jpg",
+                    "bio": "这个人很懒，什么都没留下",
+                    "phone": "17875242005"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "put": {
+        "tags": ["用户"],
+        "summary": "更新用户资料",
+        "description": "更新用户资料",
+        "security": [{"BearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProfileRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/users/password": {
+      "put": {
+        "tags": ["用户"],
+        "summary": "修改密码",
+        "description": "修改登录密码",
+        "security": [{"BearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChangePasswordRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "修改成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/upload/avatar": {
+      "post": {
+        "tags": ["文件"],
+        "summary": "上传头像",
+        "description": "上传用户头像文件",
+        "security": [{"BearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "avatar": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                },
+                "required": ["avatar"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "上传成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                },
+                "example": {
+                  "code": 200,
+                  "message": "头像上传成功",
+                  "data": {
+                    "avatarUrl": "http://106.52.165.122:8080/static/avatars/20231216_12345678_uuid.jpg",
+                    "filename": "20231216_12345678_uuid.jpg",
+                    "size": 1024000
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/upload/file": {
+      "post": {
+        "tags": ["文件"],
+        "summary": "通用文件上传",
+        "description": "通用文件上传接口",
+        "security": [{"BearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": {
+                    "type": "string",
+                    "format": "binary"
+                  }
+                },
+                "required": ["file"]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "上传成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/moments": {
+      "post": {
+        "tags": ["动态"],
+        "summary": "发布动态",
+        "description": "发布新动态（支持多标签）",
+        "security": [{"BearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateMomentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "发布成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                },
+                "example": {
+                  "code": 200,
+                  "message": "发布成功",
+                  "data": {
+                    "id": 123,
+                    "content": "今天天气真好！",
+                    "tags": ["日常", "心情", "校园"],
+                    "createdAt": "2023-12-16T14:30:00Z"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/moments": {
+      "get": {
+        "tags": ["动态"],
+        "summary": "获取动态列表",
+        "description": "获取动态列表",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {"type": "integer", "default": 1},
+            "description": "页码，默认1"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {"type": "integer", "default": 10},
+            "description": "每页数量，默认10"
+          },
+          {
+            "name": "userId",
+            "in": "query",
+            "schema": {"type": "integer"},
+            "description": "指定用户ID（可选）"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "获取成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/moments/my": {
+      "get": {
+        "tags": ["动态"],
+        "summary": "获取我的动态列表",
+        "description": "获取当前用户发布的所有动态",
+        "security": [{"BearerAuth": []}],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {"type": "integer", "default": 1},
+            "description": "页码，默认1"
+          },
+          {
+            "name": "pageSize",
+            "in": "query",
+            "schema": {"type": "integer", "default": 10},
+            "description": "每页数量，默认10"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "获取成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                },
+                "example": {
+                  "code": 200,
+                  "message": "success",
+                  "data": {
+                    "list": [
+                      {
+                        "id": 1,
+                        "content": "我的动态内容",
+                        "tags": ["学习", "生活"],
+                        "author": {
+                          "id": 1,
+                          "nickname": "测试用户",
+                          "avatar": "头像URL"
+                        },
+                        "likeCount": 10,
+                        "commentCount": 5,
+                        "createdAt": "2023-12-16T14:30:00Z"
+                      }
+                    ],
+                    "pagination": {
+                      "page": 1,
+                      "pageSize": 10,
+                      "total": 25
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/moments/{id}": {
+      "get": {
+        "tags": ["动态"],
+        "summary": "获取动态详情",
+        "description": "获取指定动态的详细信息",
+        "security": [{"BearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {"type": "integer"},
+            "description": "动态ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "获取成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "patch": {
+        "tags": ["动态"],
+        "summary": "编辑动态",
+        "description": "编辑用户发布的动态",
+        "security": [{"BearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {"type": "integer"},
+            "description": "动态ID"
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateMomentRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "更新成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["动态"],
+        "summary": "删除动态",
+        "description": "删除用户发布的动态",
+        "security": [{"BearerAuth": []}],
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {"type": "integer"},
+            "description": "动态ID"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "删除成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                },
+                "example": {
+                  "code": 200,
+                  "message": "删除成功",
+                  "data": {
+                    "postId": 123
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/search": {
+      "get": {
+        "tags": ["搜索"],
+        "summary": "搜索内容",
+        "description": "根据关键词搜索相关内容（支持类型筛选和排序）",
+        "security": [{"BearerAuth": []}],
+        "parameters": [
+          {
+            "name": "keyword",
+            "in": "query",
+            "required": true,
+            "schema": {"type": "string"},
+            "description": "搜索关键词"
+          },
+          {
+            "name": "type",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["moments", "users", "tags", "all"],
+              "default": "all"
+            },
+            "description": "搜索类型：moments(动态)、users(用户)、tags(标签)、all(全部)"
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {"type": "integer", "default": 1},
+            "description": "页码，默认1"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {"type": "integer", "default": 20, "maximum": 100},
+            "description": "每页数量，默认20，最大100"
+          },
+          {
+            "name": "sort",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["latest", "hot", "relevance"],
+              "default": "relevance"
+            },
+            "description": "排序方式：latest(最新)、hot(热门)、relevance(相关度)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "搜索成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/search/hot-words": {
+      "get": {
+        "tags": ["搜索"],
+        "summary": "获取热门关键词",
+        "description": "获取大数据统计的搜索热词",
+        "security": [{"BearerAuth": []}],
+        "parameters": [
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {"type": "integer", "default": 10, "maximum": 50},
+            "description": "返回数量，默认10，最大50"
+          },
+          {
+            "name": "period",
+            "in": "query",
+            "schema": {
+              "type": "string",
+              "enum": ["today", "week", "month"],
+              "default": "week"
+            },
+            "description": "时间周期：today(今天)、week(本周)、month(本月)"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "获取成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                },
+                "example": {
+                  "code": 200,
+                  "message": "success",
+                  "data": ["校园", "活动", "学习", "美食", "运动"]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/search/suggestions": {
+      "get": {
+        "tags": ["搜索"],
+        "summary": "获取搜索建议",
+        "description": "根据输入前缀提供实时搜索建议",
+        "security": [{"BearerAuth": []}],
+        "parameters": [
+          {
+            "name": "q",
+            "in": "query",
+            "required": true,
+            "schema": {"type": "string"},
+            "description": "查询前缀"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {"type": "integer", "default": 5, "maximum": 10},
+            "description": "建议数量，默认5，最大10"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "获取成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/search/history": {
+      "get": {
+        "tags": ["搜索"],
+        "summary": "获取搜索历史",
+        "description": "获取用户的搜索历史记录",
+        "security": [{"BearerAuth": []}],
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "schema": {"type": "integer", "default": 1},
+            "description": "页码，默认1"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "schema": {"type": "integer", "default": 20},
+            "description": "每页数量，默认20"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "获取成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": ["搜索"],
+        "summary": "保存搜索历史",
+        "description": "保存用户搜索记录",
+        "security": [{"BearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/SaveSearchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "保存成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": ["搜索"],
+        "summary": "删除搜索历史",
+        "description": "删除指定关键词的搜索历史",
+        "security": [{"BearerAuth": []}],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/DeleteSearchRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "删除成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/search/history/all": {
+      "delete": {
+        "tags": ["搜索"],
+        "summary": "清空搜索历史",
+        "description": "清空用户的所有搜索历史",
+        "security": [{"BearerAuth": []}],
+        "responses": {
+          "200": {
+            "description": "清空成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/search/filter": {
+      "get": {
+        "tags": ["搜索"],
+        "summary": "内容过滤搜索",
+        "description": "按标签、日期、用户等条件过滤搜索内容",
+        "security": [{"BearerAuth": []}],
+        "parameters": [
+          {
+            "name": "tags",
+            "in": "query",
+            "schema": {"type": "string"},
+            "description": "标签筛选，多个用逗号分隔"
+          },
+          {
+            "name": "dateFrom",
+            "in": "query",
+            "schema": {"type": "string", "format": "date"},
+            "description": "开始日期 YYYY-MM-DD"
+          },
+          {
+            "name": "dateTo",
+            "in": "query",
+            "schema": {"type": "string", "format": "date"},
+            "description": "结束日期 YYYY-MM-DD"
+          },
+          {
+            "name": "userId",
+            "in": "query",
+            "schema": {"type": "integer"},
+            "description": "用户ID筛选"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "搜索成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/BaseResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "BaseResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "状态码",
+            "example": 200
+          },
+          "message": {
+            "type": "string",
+            "description": "提示信息",
+            "example": "success"
+          },
+          "data": {
+            "type": "object",
+            "description": "实际数据"
+          }
+        },
+        "required": ["code", "message", "data"]
+      },
+      "RegisterRequest": {
+        "type": "object",
+        "properties": {
+          "phone": {
+            "type": "string",
+            "description": "手机号",
+            "example": "17875242005"
+          },
+          "password": {
+            "type": "string",
+            "description": "密码",
+            "example": "password123"
+          },
+          "username": {
+            "type": "string",
+            "description": "用户名",
+            "example": "testuser"
+          },
+          "nickname": {
+            "type": "string",
+            "description": "昵称",
+            "example": "测试用户"
+          }
+        },
+        "required": ["phone", "password", "username", "nickname"]
+      },
+      "LoginRequest": {
+        "type": "object",
+        "properties": {
+          "account": {
+            "type": "string",
+            "description": "账号（手机号或用户名）",
+            "example": "17875242005"
+          },
+          "password": {
+            "type": "string",
+            "description": "密码",
+            "example": "password123"
+          }
+        },
+        "required": ["account", "password"]
+      },
+      "AuthResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "example": 200
+          },
+          "message": {
+            "type": "string",
+            "example": "登录成功"
+          },
+          "data": {
+            "type": "object",
+            "properties": {
+              "token": {
+                "type": "string",
+                "description": "JWT访问令牌"
+              },
+              "userInfo": {
+                "type": "object",
+                "properties": {
+                  "id": {"type": "integer"},
+                  "phone": {"type": "string"},
+                  "nickname": {"type": "string"}
+                }
+              }
+            }
+          }
+        },
+        "required": ["code", "message", "data"]
+      },
+      "SendVerificationRequest": {
+        "type": "object",
+        "properties": {
+          "phone": {
+            "type": "string",
+            "description": "手机号",
+            "example": "17875242005"
+          }
+        },
+        "required": ["phone"]
+      },
+      "ResetPasswordRequest": {
+        "type": "object",
+        "properties": {
+          "phone": {
+            "type": "string",
+            "description": "手机号",
+            "example": "17875242005"
+          },
+          "verificationCode": {
+            "type": "string",
+            "description": "验证码",
+            "example": "123456"
+          },
+          "newPassword": {
+            "type": "string",
+            "description": "新密码",
+            "example": "newpassword123"
+          }
+        },
+        "required": ["phone", "verificationCode", "newPassword"]
+      },
+      "BindThirdPartyRequest": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": ["wechat", "qq", "weibo", "github"],
+            "example": "wechat"
+          },
+          "openid": {
+            "type": "string",
+            "example": "ox1234567890abcdef"
+          },
+          "unionid": {
+            "type": "string",
+            "example": "ux1234567890abcdef"
+          },
+          "nickname": {
+            "type": "string",
+            "example": "用户昵称"
+          },
+          "avatar": {
+            "type": "string",
+            "example": "https://thirdwx.qlogo.cn/avatar.jpg"
+          }
+        },
+        "required": ["provider", "openid", "unionid", "nickname", "avatar"]
+      },
+      "UnbindThirdPartyRequest": {
+        "type": "object",
+        "properties": {
+          "provider": {
+            "type": "string",
+            "enum": ["wechat", "qq", "weibo", "github"],
+            "example": "wechat"
+          }
+        },
+        "required": ["provider"]
+      },
+      "UpdateProfileRequest": {
+        "type": "object",
+        "properties": {
+          "nickname": {
+            "type": "string",
+            "description": "昵称",
+            "example": "新昵称"
+          },
+          "bio": {
+            "type": "string",
+            "description": "个人简介",
+            "example": "个人简介"
+          }
+        },
+        "required": ["nickname", "bio"]
+      },
+      "ChangePasswordRequest": {
+        "type": "object",
+        "properties": {
+          "oldPassword": {
+            "type": "string",
+            "description": "旧密码",
+            "example": "oldpassword"
+          },
+          "newPassword": {
+            "type": "string",
+            "description": "新密码",
+            "example": "newpassword123"
+          }
+        },
+        "required": ["oldPassword", "newPassword"]
+      },
+      "CreateMomentRequest": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "动态内容",
+            "example": "今天天气真好！"
+          },
+          "tags": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "标签数组",
+            "example": ["日常", "心情", "校园"]
+          },
+          "visibility": {
+            "type": "integer",
+            "enum": [0, 1, 2],
+            "description": "可见性：0=公开，1=好友，2=私密",
+            "example": 0
+          },
+          "media": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {
+                  "type": "string",
+                  "enum": ["image", "video", "audio"],
+                  "example": "image"
+                },
+                "url": {
+                  "type": "string",
+                  "example": "http://example.com/image.jpg"
+                },
+                "description": {
+                  "type": "string",
+                  "example": "图片描述"
+                }
+              }
+            },
+            "description": "媒体文件数组"
+          }
+        },
+        "required": ["content"]
+      },
+      "UpdateMomentRequest": {
+        "type": "object",
+        "properties": {
+          "content": {
+            "type": "string",
+            "description": "动态内容",
+            "example": "修改后的动态内容"
+          },
+          "tags": {
+            "type": "array",
+            "items": {"type": "string"},
+            "description": "标签数组",
+            "example": ["修改", "标签"]
+          },
+          "media": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "type": {"type": "string"},
+                "url": {"type": "string"},
+                "description": {"type": "string"}
+              }
+            },
+            "description": "媒体文件数组"
+          }
+        }
+      },
+      "SaveSearchRequest": {
+        "type": "object",
+        "properties": {
+          "keyword": {
+            "type": "string",
+            "description": "搜索关键词",
+            "example": "搜索关键词"
+          },
+          "type": {
+            "type": "string",
+            "enum": ["moments", "users", "tags", "all"],
+            "description": "搜索类型",
+            "example": "moments"
+          }
+        },
+        "required": ["keyword", "type"]
+      },
+      "DeleteSearchRequest": {
+        "type": "object",
+        "properties": {
+          "keyword": {
+            "type": "string",
+            "description": "要删除的关键词",
+            "example": "搜索关键词"
+          }
+        },
+        "required": ["keyword"]
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "JWT访问令牌，格式：Bearer <token>"
+      }
+    }
+  }
+}

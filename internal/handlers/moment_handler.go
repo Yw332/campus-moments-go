@@ -34,7 +34,7 @@ func CreateMoment(c *gin.Context) {
 	}
 
 	uid, _ := userID.(int64)
-	moment, err := momentService.CreateMoment(uid, &req)
+	moment, err := momentService.CreateMoment(strconv.FormatInt(uid, 10), &req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"code":    500,
@@ -57,11 +57,9 @@ func GetMoments(c *gin.Context) {
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
 	
 	// 支持按用户ID筛选
-	var userID *int64
+	var userID *string
 	if uidStr := c.Query("userId"); uidStr != "" {
-		if uid, err := strconv.ParseInt(uidStr, 10, 64); err == nil {
-			userID = &uid
-		}
+		userID = &uidStr
 	}
 
 	list, total, err := momentService.ListMoments(page, pageSize, userID)
@@ -166,7 +164,7 @@ func UpdateMoment(c *gin.Context) {
 	}
 
 	uid, _ := userID.(int64)
-	moment, err := momentService.UpdateMoment(uid, momentID, &req)
+	moment, err := momentService.UpdateMoment(strconv.FormatInt(uid, 10), momentID, &req)
 	if err != nil {
 		statusCode := http.StatusInternalServerError
 		message := err.Error()
@@ -214,7 +212,7 @@ func DeleteMoment(c *gin.Context) {
 	}
 
 	uid, _ := userID.(int64)
-	if err := momentService.DeleteMoment(uid, momentID); err != nil {
+	if err := momentService.DeleteMoment(strconv.FormatInt(uid, 10), momentID); err != nil {
 		statusCode := http.StatusInternalServerError
 		message := err.Error()
 		
@@ -256,7 +254,7 @@ func GetUserMoments(c *gin.Context) {
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
 
 	uid, _ := userID.(int64)
-	list, total, err := momentService.GetUserMoments(uid, page, pageSize)
+	list, total, err := momentService.GetUserMoments(strconv.FormatInt(uid, 10), page, pageSize)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"code":    200,
