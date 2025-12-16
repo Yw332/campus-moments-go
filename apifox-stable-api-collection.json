@@ -64,7 +64,37 @@
               "mode": "raw",
               "raw": "{\n  \"username\": \"testuser\",\n  \"phone\": \"13800138000\",\n  \"password\": \"Test123456\"\n}"
             }
-          }
+          },
+          "response": [
+            {
+              "name": "注册成功",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/auth/register",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "register"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"code\": 0,\n  \"message\": \"注册成功\",\n  \"data\": {\n    \"user_id\": \"1234567890123456789\",\n    \"username\": \"testuser\",\n    \"phone\": \"13800138000\",\n    \"avatar\": \"\",\n    \"bio\": \"\",\n    \"created_at\": \"2024-01-01T00:00:00Z\",\n    \"updated_at\": \"2024-01-01T00:00:00Z\"\n  }\n}"
+            },
+            {
+              "name": "用户名已存在",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/auth/register",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "register"]
+                }
+              },
+              "status": "Bad Request",
+              "code": 400,
+              "body": "{\n  \"code\": 4001,\n  \"message\": \"用户名已存在\"\n}"
+            }
+          ]
         },
         {
           "name": "用户登录",
@@ -79,7 +109,37 @@
               "mode": "raw",
               "raw": "{\n  \"account\": \"testuser\",\n  \"password\": \"Test123456\"\n}"
             }
-          }
+          },
+          "response": [
+            {
+              "name": "登录成功",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/auth/login",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "login"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"code\": 0,\n  \"message\": \"登录成功\",\n  \"data\": {\n    \"token\": \"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...\",\n    \"user_id\": \"1234567890123456789\",\n    \"username\": \"testuser\",\n    \"phone\": \"13800138000\",\n    \"avatar\": \"\",\n    \"bio\": \"\",\n    \"expires_in\": 86400\n  }\n}"
+            },
+            {
+              "name": "账号或密码错误",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/auth/login",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["auth", "login"]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "body": "{\n  \"code\": 4003,\n  \"message\": \"账号或密码错误\"\n}"
+            }
+          ]
         },
         {
           "name": "退出登录",
@@ -96,7 +156,37 @@
                 "value": "Bearer {{token}}"
               }
             ]
-          }
+          },
+          "response": [
+            {
+              "name": "退出成功",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/logout",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "auth", "logout"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"code\": 0,\n  \"message\": \"退出登录成功\",\n  \"data\": null\n}"
+            },
+            {
+              "name": "未登录",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/api/auth/logout",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "auth", "logout"]
+                }
+              },
+              "status": "Unauthorized",
+              "code": 401,
+              "body": "{\n  \"code\": 4004,\n  \"message\": \"请先登录\"\n}"
+            }
+          ]
         }
       ]
     },
@@ -118,7 +208,23 @@
                 "value": "Bearer {{token}}"
               }
             ]
-          }
+          },
+          "response": [
+            {
+              "name": "获取成功",
+              "originalRequest": {
+                "method": "GET",
+                "url": {
+                  "raw": "{{baseUrl}}/api/users/profile",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "users", "profile"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"code\": 0,\n  \"message\": \"获取用户资料成功\",\n  \"data\": {\n    \"user_id\": \"1234567890123456789\",\n    \"username\": \"testuser\",\n    \"phone\": \"13800138000\",\n    \"avatar\": \"http://106.52.165.122:8080/uploads/avatar/1234567890123456789.jpg\",\n    \"bio\": \"这是我的个人简介\",\n    \"created_at\": \"2024-01-01T00:00:00Z\",\n    \"updated_at\": \"2024-01-01T00:00:00Z\"\n  }\n}"
+            }
+          ]
         },
         {
           "name": "更新用户资料",
@@ -139,7 +245,23 @@
               "mode": "raw",
               "raw": "{\n  \"username\": \"newusername\",\n  \"phone\": \"13900139000\"\n}"
             }
-          }
+          },
+          "response": [
+            {
+              "name": "更新成功",
+              "originalRequest": {
+                "method": "PUT",
+                "url": {
+                  "raw": "{{baseUrl}}/api/users/profile",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "users", "profile"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"code\": 0,\n  \"message\": \"更新用户资料成功\",\n  \"data\": {\n    \"user_id\": \"1234567890123456789\",\n    \"username\": \"newusername\",\n    \"phone\": \"13900139000\",\n    \"avatar\": \"http://106.52.165.122:8080/uploads/avatar/1234567890123456789.jpg\",\n    \"bio\": \"这是我的个人简介\",\n    \"created_at\": \"2024-01-01T00:00:00Z\",\n    \"updated_at\": \"2024-01-02T00:00:00Z\"\n  }\n}"
+            }
+          ]
         }
       ]
     },
@@ -170,7 +292,23 @@
                 }
               ]
             }
-          }
+          },
+          "response": [
+            {
+              "name": "上传成功",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/api/upload/file",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "upload", "file"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"code\": 0,\n  \"message\": \"文件上传成功\",\n  \"data\": {\n    \"file_id\": \"file_1234567890123456789\",\n    \"filename\": \"example.jpg\",\n    \"file_size\": 1024000,\n    \"file_type\": \"image/jpeg\",\n    \"file_url\": \"http://106.52.165.122:8080/uploads/files/1234567890123456789_example.jpg\"\n  }\n}"
+            }
+          ]
         },
         {
           "name": "上传头像",
@@ -196,7 +334,23 @@
                 }
               ]
             }
-          }
+          },
+          "response": [
+            {
+              "name": "上传成功",
+              "originalRequest": {
+                "method": "POST",
+                "url": {
+                  "raw": "{{baseUrl}}/api/upload/avatar",
+                  "host": ["{{baseUrl}}"],
+                  "path": ["api", "upload", "avatar"]
+                }
+              },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"code\": 0,\n  \"message\": \"头像上传成功\",\n  \"data\": {\n    \"avatar_url\": \"http://106.52.165.122:8080/uploads/avatar/1234567890123456789.jpg\"\n  }\n}"
+            }
+          ]
         }
       ]
     }
