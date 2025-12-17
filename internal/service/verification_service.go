@@ -100,7 +100,7 @@ func (s *VerificationService) ResetPasswordByPhone(phone, newPassword string) er
 
 	// 3. 记录重置日志
 	resetLog := models.ResetPasswordLog{
-		UserID:  fmt.Sprintf("%010d", user.ID),
+		UserID:  user.ID,
 		Phone:   phone,
 		ResetAt: time.Now(),
 	}

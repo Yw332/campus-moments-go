@@ -3,6 +3,7 @@ package handlers
 import (
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/Yw332/campus-moments-go/internal/models"
@@ -10,6 +11,7 @@ import (
 	"github.com/Yw332/campus-moments-go/pkg/database"
 	"github.com/Yw332/campus-moments-go/pkg/jwt"
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var adminService = service.NewAdminService()
@@ -65,9 +67,24 @@ func ListUsers(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 200, "message": "ok", "data": users})
 }
 
+// padID 将短数字ID（如 "8"）转为数据库的 10 位字符串形式（"0000000008"）
+func padID(id string) string {
+	if len(id) >= 10 {
+		return id
+	}
+	// 仅对纯数字做补零
+	for _, ch := range id {
+		if ch < '0' || ch > '9' {
+			return id
+		}
+	}
+	return strings.Repeat("0", 10-len(id)) + id
+}
+
 // GetUserDetail 获取指定用户
 func GetUserDetail(c *gin.Context) {
 	id := c.Param("id")
+	id = padID(id)
 	db := database.GetDB()
 	var user models.User
 	if err := db.Where("id = ?", id).First(&user).Error; err != nil {
@@ -80,6 +97,7 @@ func GetUserDetail(c *gin.Context) {
 // ResetUserPassword 管理重置用户密码
 func ResetUserPassword(c *gin.Context) {
 	id := c.Param("id")
+	id = padID(id)
 	var req struct {
 		NewPassword string `json:"newPassword" binding:"required"`
 		Confirm     bool   `json:"confirm" binding:"required"`
@@ -96,15 +114,20 @@ func ResetUserPassword(c *gin.Context) {
 	a := service.NewAuthService()
 	// 使用字符串ID版本的更新
 	if err := a.UpdatePasswordStr(id, "", req.NewPassword); err != nil {
-		// UpdatePasswordStr 現在需要旧密码，为管理重置应直接更新
+		// UpdatePasswordStr 需要旧密码，为管理重置应直接更新
 		db := database.GetDB()
 		var user models.User
 		if err := db.Where("id = ?", id).First(&user).Error; err != nil {
 			c.JSON(http.StatusNotFound, gin.H{"code": 404, "message": "用户不存在", "data": nil})
 			return
 		}
-		hashed := []byte(req.NewPassword)
-		user.Password = string(hashed)
+		// 使用 bcrypt 哈希新密码
+		hashedPw, err := bcrypt.GenerateFromPassword([]byte(req.NewPassword), bcrypt.DefaultCost)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "message": "密码加密失败", "data": nil})
+			return
+		}
+		user.Password = string(hashedPw)
 		if err := db.Save(&user).Error; err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "message": "重置密码失败", "data": nil})
 			return
@@ -117,16 +140,26 @@ func ResetUserPassword(c *gin.Context) {
 // DeleteUser 删除指定用户
 func DeleteUser(c *gin.Context) {
 	id := c.Param("id")
+	id = padID(id)
 	confirm := c.Query("confirm")
 	if confirm != "true" {
 		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "message": "请确认删除（?confirm=true）", "data": nil})
 		return
 	}
+	// 删除用户前先删除相关的 moments（否则外键限制会阻止删除）
 	db := database.GetDB()
-	if err := db.Where("id = ?", id).Delete(&models.User{}).Error; err != nil {
+	tx := db.Begin()
+	if err := tx.Exec("DELETE FROM moments WHERE author_id = ?", id).Error; err != nil {
+		tx.Rollback()
+		c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "message": "删除用户相关动态失败", "data": nil})
+		return
+	}
+	if err := tx.Where("id = ?", id).Delete(&models.User{}).Error; err != nil {
+		tx.Rollback()
 		c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "message": "删除失败", "data": nil})
 		return
 	}
+	tx.Commit()
 	c.JSON(http.StatusOK, gin.H{"code": 200, "message": "删除成功", "data": nil})
 }
 
