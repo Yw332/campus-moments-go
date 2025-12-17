@@ -23,6 +23,23 @@ func SetupRoutes(router *gin.Engine) {
 	// 公开的动态列表（不需要登录也能看）
 	router.GET("/moments", handlers.GetMoments)
 
+	// 管理端登录
+	router.POST("/admin/login", handlers.AdminLogin)
+
+	// 管理端路由（需要登录 + 管理员权限）
+	admin := router.Group("/admin")
+	admin.Use(middleware.AuthMiddleware(), middleware.AdminMiddleware())
+	{
+		admin.GET("/menu", handlers.AdminMenu)
+		admin.GET("/users", handlers.ListUsers)
+		admin.GET("/users/:id", handlers.GetUserDetail)
+		admin.POST("/users/:id/password", handlers.ResetUserPassword)
+		admin.DELETE("/users/:id", handlers.DeleteUser)
+		admin.GET("/contents", handlers.ListContents)
+		admin.GET("/contents/:id", handlers.GetContentDetail)
+		admin.DELETE("/contents/:id", handlers.DeleteContent)
+	}
+
 	// ========== 需要认证的路由 ==========
 	api := router.Group("/api")
 	api.Use(middleware.AuthMiddleware())
@@ -63,7 +80,7 @@ func SetupRoutes(router *gin.Engine) {
 			search.GET("/filter", handlers.GetFilteredContent)
 			search.POST("/history", handlers.SaveSearchHistory)
 			search.GET("/suggestions", handlers.GetSearchSuggestions) // 搜索建议
-			search.GET("", handlers.SearchContent) // GET /search?keyword=xxx
+			search.GET("", handlers.SearchContent)                    // GET /search?keyword=xxx
 		}
 	}
 }

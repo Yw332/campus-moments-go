@@ -27,7 +27,7 @@ type SearchRequest struct {
 type SearchResponse struct {
 	Moments    []models.Moment `json:"moments"`
 	Users      []models.User   `json:"users"`
-	Pagination Pagination     `json:"pagination"`
+	Pagination Pagination      `json:"pagination"`
 }
 
 type FilterRequest struct {

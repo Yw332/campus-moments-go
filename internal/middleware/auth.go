@@ -72,7 +72,7 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-	// 将用户信息设置到上下文（转换为字符串ID）
+		// 将用户信息设置到上下文（转换为字符串ID）
 		c.Set("userID", fmt.Sprintf("%010d", claims.UserID))
 		c.Set("username", claims.Username)
 		c.Set("claims", claims)

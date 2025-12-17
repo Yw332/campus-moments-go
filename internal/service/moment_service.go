@@ -24,18 +24,18 @@ func NewMomentService() *MomentService {
 
 // CreateMomentRequest 创建动态请求
 type CreateMomentRequest struct {
-	Content    string                  `json:"content" binding:"required"`
-	Tags       []string                `json:"tags"`
-	Media      []models.MediaItem      `json:"media"`
-	Visibility int                     `json:"visibility"` // 0公开/1好友/2私密
+	Content    string             `json:"content" binding:"required"`
+	Tags       []string           `json:"tags"`
+	Media      []models.MediaItem `json:"media"`
+	Visibility int                `json:"visibility"` // 0公开/1好友/2私密
 }
 
 // UpdateMomentRequest 更新动态请求
 type UpdateMomentRequest struct {
-	Content    *string                 `json:"content,omitempty"`
-	Tags       []string                `json:"tags,omitempty"`
-	Media      []models.MediaItem      `json:"media,omitempty"`
-	Visibility *int                    `json:"visibility,omitempty"`
+	Content    *string            `json:"content,omitempty"`
+	Tags       []string           `json:"tags,omitempty"`
+	Media      []models.MediaItem `json:"media,omitempty"`
+	Visibility *int               `json:"visibility,omitempty"`
 }
 
 // CreateMoment 创建动态
@@ -45,16 +45,16 @@ func (s *MomentService) CreateMoment(userID string, req *CreateMomentRequest) (*
 	}
 
 	moment := &models.Moment{
-		Content:    req.Content,
-		AuthorID:   userID,
-		Tags:       models.Tags(req.Tags),
-		Media:      models.MediaItems(req.Media),
-		Visibility: req.Visibility,
-		LikeCount:  0,
+		Content:      req.Content,
+		AuthorID:     userID,
+		Tags:         models.Tags(req.Tags),
+		Media:        models.MediaItems(req.Media),
+		Visibility:   req.Visibility,
+		LikeCount:    0,
 		CommentCount: 0,
-		Status:     1, // 正常状态
-		CreatedAt:  time.Now(),
-		UpdatedAt:  time.Now(),
+		Status:       1, // 正常状态
+		CreatedAt:    time.Now(),
+		UpdatedAt:    time.Now(),
 	}
 
 	if err := s.db.Create(moment).Error; err != nil {
@@ -109,7 +109,7 @@ func (s *MomentService) ListMoments(page, pageSize int, userID *string) ([]model
 	var total int64
 
 	query := s.db.Preload("Author").Where("status = 1")
-	
+
 	// 如果指定了用户ID，则查询该用户的动态
 	if userID != nil {
 		query = query.Where("author_id = ?", *userID)

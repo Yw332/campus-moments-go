@@ -50,7 +50,7 @@ func login() (string, error) {
 	defer resp.Body.Close()
 
 	body, _ := io.ReadAll(resp.Body)
-	
+
 	var result map[string]interface{}
 	if err := json.Unmarshal(body, &result); err != nil {
 		return "", err
@@ -59,7 +59,7 @@ func login() (string, error) {
 	if token, ok := result["data"].(map[string]interface{})["token"].(string); ok {
 		return token, nil
 	}
-	
+
 	return "", fmt.Errorf("获取token失败")
 }
 

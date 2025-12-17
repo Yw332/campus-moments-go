@@ -138,7 +138,7 @@ func SaveSearchHistory(c *gin.Context) {
 func GetFilteredContent(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
-	
+
 	// 获取筛选参数
 	visibility := c.Query("visibility")
 	tags := c.QueryArray("tags")
@@ -174,7 +174,7 @@ func GetFilteredContent(c *gin.Context) {
 // GetSearchSuggestions 获取搜索建议
 func GetSearchSuggestions(c *gin.Context) {
 	keyword := c.Query("keyword")
-	
+
 	suggestions, err := searchService.GetSearchSuggestions(keyword)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{

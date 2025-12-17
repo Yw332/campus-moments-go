@@ -8,20 +8,20 @@ import (
 
 // Moment 动态模型
 type Moment struct {
-	ID           int64           `json:"id" gorm:"primaryKey;autoIncrement"`
-	Content      string          `json:"content" gorm:"type:text;not null"`
-	AuthorID     string          `json:"authorId" gorm:"type:char(10);not null;index"`
-	Tags         Tags            `json:"tags" gorm:"type:json"`
-	Media        MediaItems      `json:"media" gorm:"type:json"`
-	Visibility   int             `json:"visibility" gorm:"default:0;comment:0公开/1好友/2私密"`
-	LikeCount    int             `json:"likeCount" gorm:"default:0"`
-	CommentCount int             `json:"commentCount" gorm:"default:0"`
-	Status       int             `json:"status" gorm:"default:1;comment:1正常/2删除"`
-	CreatedAt    time.Time       `json:"createdAt"`
-	UpdatedAt    time.Time       `json:"updatedAt"`
-	
+	ID           int64      `json:"id" gorm:"primaryKey;autoIncrement"`
+	Content      string     `json:"content" gorm:"type:text;not null"`
+	AuthorID     string     `json:"authorId" gorm:"type:char(10);not null;index"`
+	Tags         Tags       `json:"tags" gorm:"type:json"`
+	Media        MediaItems `json:"media" gorm:"type:json"`
+	Visibility   int        `json:"visibility" gorm:"default:0;comment:0公开/1好友/2私密"`
+	LikeCount    int        `json:"likeCount" gorm:"default:0"`
+	CommentCount int        `json:"commentCount" gorm:"default:0"`
+	Status       int        `json:"status" gorm:"default:1;comment:1正常/2删除"`
+	CreatedAt    time.Time  `json:"createdAt"`
+	UpdatedAt    time.Time  `json:"updatedAt"`
+
 	// 关联字段
-	Author       *User           `json:"author,omitempty" gorm:"foreignKey:AuthorID"`
+	Author *User `json:"author,omitempty" gorm:"foreignKey:AuthorID"`
 }
 
 // Tags 标签数组类型
@@ -41,7 +41,7 @@ func (t *Tags) Scan(value interface{}) error {
 		*t = Tags{}
 		return nil
 	}
-	
+
 	switch v := value.(type) {
 	case []byte:
 		return json.Unmarshal(v, t)
@@ -78,7 +78,7 @@ func (m *MediaItems) Scan(value interface{}) error {
 		*m = MediaItems{}
 		return nil
 	}
-	
+
 	switch v := value.(type) {
 	case []byte:
 		return json.Unmarshal(v, m)

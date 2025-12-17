@@ -6,14 +6,14 @@ import (
 
 // VerificationCode 验证码模型
 type VerificationCode struct {
-	ID          int64     `json:"id" gorm:"primaryKey;autoIncrement"`
-	Phone       string    `json:"phone" gorm:"type:varchar(11);not null;index"`
-	Code        string    `json:"code" gorm:"type:varchar(6);not null"`
-	Type        string    `json:"type" gorm:"type:varchar(20);not null;default:'reset_password'"` // reset_password, login_verify
-	IsUsed      bool      `json:"isUsed" gorm:"default:false"`
-	ExpiresAt   time.Time `json:"expiresAt" gorm:"not null"`
-	CreatedAt   time.Time `json:"createdAt"`
-	UpdatedAt   time.Time `json:"updatedAt"`
+	ID        int64     `json:"id" gorm:"primaryKey;autoIncrement"`
+	Phone     string    `json:"phone" gorm:"type:varchar(11);not null;index"`
+	Code      string    `json:"code" gorm:"type:varchar(6);not null"`
+	Type      string    `json:"type" gorm:"type:varchar(20);not null;default:'reset_password'"` // reset_password, login_verify
+	IsUsed    bool      `json:"isUsed" gorm:"default:false"`
+	ExpiresAt time.Time `json:"expiresAt" gorm:"not null"`
+	CreatedAt time.Time `json:"createdAt"`
+	UpdatedAt time.Time `json:"updatedAt"`
 }
 
 // SearchHistory 搜索历史模型

@@ -5,7 +5,7 @@ import (
 )
 
 type User struct {
-	ID        int64     `json:"userId" gorm:"primaryKey;autoIncrement"`
+	ID        string    `json:"userId" gorm:"primaryKey;size:10;not null"`
 	Username  string    `json:"username" gorm:"uniqueIndex;size:50;not null"`
 	Phone     string    `json:"phone" gorm:"uniqueIndex;size:20;not null"`
 	Password  string    `json:"-" gorm:"size:255;not null"` // 密码不返回给前端

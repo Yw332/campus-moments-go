@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"regexp"
+	"strconv"
 	"time"
 
 	"github.com/Yw332/campus-moments-go/internal/models"
@@ -30,7 +31,7 @@ type RegisterRequest struct {
 
 // LoginRequest 登录请求结构
 type LoginRequest struct {
-	Account  string `json:"account" binding:"required"`  // 用户名或手机号
+	Account  string `json:"account" binding:"required"` // 用户名或手机号
 	Password string `json:"password" binding:"required"`
 }
 
@@ -121,22 +122,22 @@ func (s *AuthService) Register(req *RegisterRequest) (*models.User, error) {
 	var maxIDStr string
 	db.Raw("SELECT COALESCE(MAX(id), '0000000000') FROM users").Scan(&maxIDStr)
 	log.Printf("当前最大ID字符串: %s", maxIDStr)
-	
+
 	// 将字符串ID转换为整数
 	var maxID int64
 	fmt.Sscanf(maxIDStr, "%d", &maxID)
 	log.Printf("转换后的最大ID: %d", maxID)
-	
+
 	// 检查表结构，获取ID字段的默认值信息
 	var columnInfo struct {
-		Field      string `json:"Field"`
-		Type       string `json:"Type"`
-		Null       string `json:"Null"`
-		Key        string `json:"Key"`
-		Default    string `json:"Default"`
-		Extra      string `json:"Extra"`
+		Field   string `json:"Field"`
+		Type    string `json:"Type"`
+		Null    string `json:"Null"`
+		Key     string `json:"Key"`
+		Default string `json:"Default"`
+		Extra   string `json:"Extra"`
 	}
-	
+
 	// 查询ID字段的详细信息
 	if err := db.Raw("SHOW COLUMNS FROM users WHERE Field = 'id'").Scan(&columnInfo).Error; err == nil {
 		log.Printf("ID字段信息: %+v", columnInfo)
@@ -146,18 +147,18 @@ func (s *AuthService) Register(req *RegisterRequest) (*models.User, error) {
 	newID := maxID + 1
 	idStr := fmt.Sprintf("%010d", newID) // 格式化为10位数字，前面补零
 	log.Printf("生成的新ID: %s (数字: %d)", idStr, newID)
-	
+
 	sql := "INSERT INTO users (id, username, phone, password, status, created_at, updated_at) VALUES (?, ?, ?, ?, ?, NOW(), NOW())"
-	
+
 	log.Printf("执行SQL: %s", sql)
 	log.Printf("参数: id=%s, username=%s, phone=%s", idStr, req.Username, req.Phone)
-	
+
 	if err := db.Exec(sql, idStr, req.Username, req.Phone, string(hashedPassword), 1).Error; err != nil {
 		return nil, fmt.Errorf("创建用户失败: %v", err)
 	}
 
 	user := &models.User{
-		ID:       newID,
+		ID:       idStr,
 		Username: req.Username,
 		Phone:    req.Phone,
 		Status:   1,
@@ -194,7 +195,11 @@ func (s *AuthService) Login(req *LoginRequest) (*LoginResponse, error) {
 	}
 
 	// 生成JWT token
-	token, err := jwt.GenerateToken(user.ID, user.Username)
+	uid, err := strconv.ParseInt(user.ID, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("解析用户ID失败: %v", err)
+	}
+	token, err := jwt.GenerateToken(uid, user.Username)
 	if err != nil {
 		return nil, fmt.Errorf("生成token失败: %v", err)
 	}
@@ -217,7 +222,8 @@ func (s *AuthService) GetUserByID(userID int64) (*models.User, error) {
 	db := database.GetDB()
 	var user models.User
 
-	if err := db.Where("id = ? AND status = 1", userID).First(&user).Error; err != nil {
+	idStr := strconv.FormatInt(userID, 10)
+	if err := db.Where("id = ? AND status = 1", idStr).First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.New("用户不存在")
 		}
@@ -252,7 +258,8 @@ func (s *AuthService) UpdatePassword(userID int64, oldPassword, newPassword stri
 	db := database.GetDB()
 	var user models.User
 
-	if err := db.Where("id = ?", userID).First(&user).Error; err != nil {
+	idStr := strconv.FormatInt(userID, 10)
+	if err := db.Where("id = ?", idStr).First(&user).Error; err != nil {
 		return errors.New("用户不存在")
 	}
 

@@ -36,11 +36,19 @@ func Register(c *gin.Context) {
 		return
 	}
 
+	// 将 string ID 转为数字返回以兼容现有测试/客户端
+	var userIDNum int64 = 0
+	if idStr, ok := interface{}(user.ID).(string); ok {
+		if v, err := strconv.ParseInt(idStr, 10, 64); err == nil {
+			userIDNum = v
+		}
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"code":    200,
 		"message": "注册成功",
 		"data": gin.H{
-			"userId":   user.ID,
+			"userId":   userIDNum,
 			"username": user.Username,
 			"phone":    user.Phone,
 		},
@@ -104,7 +112,7 @@ func Logout(c *gin.Context) {
 	auth := c.GetHeader("Authorization")
 	if auth != "" && strings.HasPrefix(auth, "Bearer ") {
 		token := strings.TrimPrefix(auth, "Bearer ")
-		
+
 		// 解析Token获取过期时间
 		if claims, err := jwt.ParseToken(token); err == nil {
 			blacklist := token_blacklist.GetInstance()
@@ -215,13 +223,13 @@ func UpdateUserProfile(c *gin.Context) {
 	}
 
 	uid := userID.(string)
-	
+
 	// 临时实现，实际应该从请求体获取数据
 	c.JSON(http.StatusOK, gin.H{
 		"code":    200,
 		"message": "更新成功",
 		"data": gin.H{
-			"userID": uid,
+			"userID":  uid,
 			"updated": true,
 		},
 	})
@@ -266,9 +274,9 @@ func SendVerificationCode(c *gin.Context) {
 // VerifyAndResetPassword 验证验证码并重置密码
 func VerifyAndResetPassword(c *gin.Context) {
 	var req struct {
-		Phone           string `json:"phone" binding:"required"`
+		Phone            string `json:"phone" binding:"required"`
 		VerificationCode string `json:"verificationCode" binding:"required"`
-		NewPassword     string `json:"newPassword" binding:"required,min=6"`
+		NewPassword      string `json:"newPassword" binding:"required,min=6"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {

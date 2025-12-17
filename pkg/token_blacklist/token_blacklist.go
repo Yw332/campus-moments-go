@@ -9,7 +9,7 @@ import (
 type TokenBlacklist struct {
 	mu          sync.RWMutex
 	blacklist   map[string]time.Time // token -> 过期时间
-	cleanupTime time.Time             // 上次清理时间
+	cleanupTime time.Time            // 上次清理时间
 }
 
 var (
@@ -32,9 +32,9 @@ func GetInstance() *TokenBlacklist {
 func (tb *TokenBlacklist) AddToken(token string, expiresAt time.Time) {
 	tb.mu.Lock()
 	defer tb.mu.Unlock()
-	
+
 	tb.blacklist[token] = expiresAt
-	
+
 	// 定期清理过期Token
 	if time.Since(tb.cleanupTime) > 10*time.Minute {
 		tb.cleanup()
@@ -46,18 +46,18 @@ func (tb *TokenBlacklist) AddToken(token string, expiresAt time.Time) {
 func (tb *TokenBlacklist) IsBlacklisted(token string) bool {
 	tb.mu.RLock()
 	defer tb.mu.RUnlock()
-	
+
 	expiresAt, exists := tb.blacklist[token]
 	if !exists {
 		return false
 	}
-	
+
 	// 如果Token已过期，从黑名单中移除并返回false
 	if time.Now().After(expiresAt) {
 		delete(tb.blacklist, token)
 		return false
 	}
-	
+
 	return true
 }
 

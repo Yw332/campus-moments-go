@@ -43,7 +43,7 @@ func TestUploadAvatar(t *testing.T) {
 
 	// 创建测试图片文件
 	testImageContent := []byte("fake image content for testing")
-	
+
 	tests := []struct {
 		name           string
 		filename       string
