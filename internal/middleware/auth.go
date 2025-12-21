@@ -1,7 +1,6 @@
 package middleware
 
 import (
-	"fmt"
 	"net/http"
 	"strings"
 
@@ -72,8 +71,8 @@ func AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-	// 将用户信息设置到上下文（转换为字符串ID）
-		c.Set("userID", fmt.Sprintf("%010d", claims.UserID))
+		// 将用户信息设置到上下文（转换为字符串ID）
+		c.Set("userID", claims.UserID) // ID已经是字符串或者int64，这里直接用
 		c.Set("username", claims.Username)
 		c.Set("claims", claims)
 

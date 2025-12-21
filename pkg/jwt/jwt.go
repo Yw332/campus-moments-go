@@ -10,13 +10,13 @@ import (
 
 // Claims JWT声明结构
 type Claims struct {
-	UserID   int64  `json:"userId"`
+	UserID   string `json:"userId"`
 	Username string `json:"username"`
 	jwt.RegisteredClaims
 }
 
 // GenerateToken 生成JWT token
-func GenerateToken(userID int64, username string) (string, error) {
+func GenerateToken(userID string, username string) (string, error) {
 	claims := Claims{
 		UserID:   userID,
 		Username: username,
