@@ -33,8 +33,8 @@ func AdminLogin(c *gin.Context) {
 		return
 	}
 
-	// 生成 token（admin 不依赖 userId，使用 0）
-	token, _ := jwt.GenerateToken(0, admin.Username)
+	// 生成 token（admin 不依赖 userId，使用 "0"）
+	token, _ := jwt.GenerateToken("0", admin.Username)
 
 	c.JSON(http.StatusOK, gin.H{"code": 200, "message": "登录成功", "data": gin.H{"token": token}})
 }

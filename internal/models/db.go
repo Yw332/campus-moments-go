@@ -15,7 +15,7 @@ func AutoMigrate() {
 	}
 
 	// 迁移动态表
-	if err := db.AutoMigrate(&Moment{}); err != nil {
+	if err := db.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci").AutoMigrate(&Moment{}); err != nil {
 		log.Printf("❌ 动态表迁移失败: %v", err)
 	} else {
 		log.Println("✅ 动态表迁移成功")
@@ -25,25 +25,40 @@ func AutoMigrate() {
 	log.Println("✅ 跳过用户表迁移，使用现有表结构")
 
 	// 迁移验证码相关表
-	if err := db.AutoMigrate(&VerificationCode{}); err != nil {
+	if err := db.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci").AutoMigrate(&VerificationCode{}); err != nil {
 		log.Printf("❌ 验证码表迁移失败: %v", err)
 	} else {
 		log.Println("✅ 验证码表迁移成功")
 	}
 
 	// 迁移搜索历史表
-	if err := db.AutoMigrate(&SearchHistory{}); err != nil {
+	if err := db.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci").AutoMigrate(&SearchHistory{}); err != nil {
 		log.Printf("❌ 搜索历史表迁移失败: %v", err)
 	} else {
 		log.Println("✅ 搜索历史表迁移成功")
 	}
 
 	// 迁移重置密码日志表
-	if err := db.AutoMigrate(&ResetPasswordLog{}); err != nil {
+	if err := db.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci").AutoMigrate(&ResetPasswordLog{}); err != nil {
 		log.Printf("❌ 重置密码日志表迁移失败: %v", err)
 	} else {
 		log.Println("✅ 重置密码日志表迁移成功")
 	}
+
+	// 迁移评论表
+	if err := db.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci").AutoMigrate(&Comment{}); err != nil {
+		log.Printf("❌ 评论表迁移失败: %v", err)
+	} else {
+		log.Println("✅ 评论表迁移成功")
+	}
+
+	// 迁移点赞表
+	if err := db.Set("gorm:table_options", "ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci").AutoMigrate(&Like{}); err != nil {
+		log.Printf("❌ 点赞表迁移失败: %v", err)
+	} else {
+		log.Println("✅ 点赞表迁移成功")
+	}
+
 }
 
 // CreateTables 如果表不存在则创建
@@ -74,5 +89,27 @@ func CreateTables() {
 		}
 	} else {
 		log.Println("✅ 动态表已存在")
+	}
+
+	// 检查并创建评论表
+	if !db.Migrator().HasTable(&Comment{}) {
+		if err := db.AutoMigrate(&Comment{}); err != nil {
+			log.Printf("创建评论表失败: %v", err)
+		} else {
+			log.Println("✅ 评论表创建成功")
+		}
+	} else {
+		log.Println("✅ 评论表已存在")
+	}
+
+	// 检查并创建点赞表
+	if !db.Migrator().HasTable(&Like{}) {
+		if err := db.AutoMigrate(&Like{}); err != nil {
+			log.Printf("创建点赞表失败: %v", err)
+		} else {
+			log.Println("✅ 点赞表创建成功")
+		}
+	} else {
+		log.Println("✅ 点赞表已存在")
 	}
 }

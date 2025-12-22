@@ -5,11 +5,7 @@ import (
 )
 
 type User struct {
-<<<<<<< HEAD
 	ID        string    `json:"userId" gorm:"primaryKey;type:char(10)"`
-=======
-	ID        string    `json:"userId" gorm:"primaryKey;size:10;not null"`
->>>>>>> be7109d45b16980427c35fc3f6c3874bbda68e13
 	Username  string    `json:"username" gorm:"uniqueIndex;size:50;not null"`
 	Phone     string    `json:"phone" gorm:"uniqueIndex;size:20;not null"`
 	Nickname  string    `json:"nickname" gorm:"size:50"`

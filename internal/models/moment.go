@@ -21,11 +21,7 @@ type Moment struct {
 	UpdatedAt    time.Time  `json:"updatedAt"`
 
 	// 关联字段
-<<<<<<< HEAD
-	Author       *User           `json:"author,omitempty" gorm:"foreignKey:AuthorID;constraint:false"`
-=======
-	Author *User `json:"author,omitempty" gorm:"foreignKey:AuthorID"`
->>>>>>> be7109d45b16980427c35fc3f6c3874bbda68e13
+	Author *User `json:"author,omitempty" gorm:"foreignKey:AuthorID;constraint:false"`
 }
 
 // Tags 标签数组类型

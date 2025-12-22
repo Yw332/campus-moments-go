@@ -248,11 +248,7 @@ func (s *AuthService) Login(req *LoginRequest) (*LoginResponse, error) {
 	}
 
 	// 生成JWT token
-	uid, err := strconv.ParseInt(user.ID, 10, 64)
-	if err != nil {
-		return nil, fmt.Errorf("解析用户ID失败: %v", err)
-	}
-	token, err := jwt.GenerateToken(uid, user.Username)
+	token, err := jwt.GenerateToken(user.ID, user.Username)
 	if err != nil {
 		return nil, fmt.Errorf("生成token失败: %v", err)
 	}

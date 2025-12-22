@@ -62,7 +62,13 @@ func SetupRoutes(router *gin.Engine) {
 			moments.PATCH("/:id", handlers.UpdateMoment)
 			moments.DELETE("/:id", handlers.DeleteMoment)
 			moments.GET("/my", handlers.GetUserMoments) // 获取当前用户的动态列表
+			moments.GET("/:id/comments", handlers.GetMomentComments) // 获取动态评论
 		}
+
+		// 互动相关
+		api.POST("/comments", handlers.CreateComment)
+		api.DELETE("/comments/:id", handlers.DeleteComment)
+		api.POST("/likes", handlers.ToggleLike)
 
 		// 用户相关
 		users := api.Group("/users")
