@@ -52,7 +52,7 @@ func UploadFile(c *gin.Context) {
 		".zip":  true,
 		".rar":  true,
 	}
-	
+
 	if !allowedExts[ext] {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code":    400,
@@ -91,17 +91,17 @@ func UploadFile(c *gin.Context) {
 
 	// 6. 返回访问URL
 	fileUrl := fmt.Sprintf("http://106.52.165.122:8080/static/files/%s", newFilename)
-	
+
 	c.JSON(http.StatusOK, gin.H{
 		"code":    0,
 		"message": "文件上传成功",
 		"data": gin.H{
-			"fileId":   uuid[:16],
-			"filename": newFilename,
+			"fileId":       uuid[:16],
+			"filename":     newFilename,
 			"originalName": file.Filename,
-			"fileSize": file.Size,
-			"fileType": ext,
-			"fileUrl":  fileUrl,
+			"fileSize":     file.Size,
+			"fileType":     ext,
+			"fileUrl":      fileUrl,
 		},
 	})
 }
@@ -137,7 +137,7 @@ func UploadAvatar(c *gin.Context) {
 		".gif":  true,
 		".webp": true,
 	}
-	
+
 	if !allowedExts[ext] {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code":    400,
@@ -176,7 +176,7 @@ func UploadAvatar(c *gin.Context) {
 
 	// 6. 返回真实的访问URL
 	avatarUrl := fmt.Sprintf("http://106.52.165.122:8080/static/avatars/%s", newFilename)
-	
+
 	c.JSON(http.StatusOK, gin.H{
 		"code":    0,
 		"message": "头像上传成功",

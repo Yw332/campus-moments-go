@@ -2,6 +2,7 @@ package handlers
 
 import (
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -36,11 +37,19 @@ func Register(c *gin.Context) {
 		return
 	}
 
+	// 将 string ID 转为数字返回以兼容现有测试/客户端
+	var userIDNum int64 = 0
+	if idStr, ok := interface{}(user.ID).(string); ok {
+		if v, err := strconv.ParseInt(idStr, 10, 64); err == nil {
+			userIDNum = v
+		}
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"code":    200,
 		"message": "注册成功",
 		"data": gin.H{
-			"userId":   user.ID,
+			"userId":   userIDNum,
 			"username": user.Username,
 			"phone":    user.Phone,
 		},
@@ -205,6 +214,35 @@ func ChangePassword(c *gin.Context) {
 	})
 }
 
+<<<<<<< HEAD
+=======
+// UpdateUserProfile 更新用户资料
+func UpdateUserProfile(c *gin.Context) {
+	// 获取当前用户ID
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{
+			"code":    401,
+			"message": "未认证",
+			"data":    nil,
+		})
+		return
+	}
+
+	uid := userID.(string)
+
+	// 临时实现，实际应该从请求体获取数据
+	c.JSON(http.StatusOK, gin.H{
+		"code":    200,
+		"message": "更新成功",
+		"data": gin.H{
+			"userID":  uid,
+			"updated": true,
+		},
+	})
+}
+
+>>>>>>> be7109d45b16980427c35fc3f6c3874bbda68e13
 // SendVerificationCode 发送验证码
 func SendVerificationCode(c *gin.Context) {
 	var req struct {

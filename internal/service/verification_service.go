@@ -30,7 +30,7 @@ func (s *VerificationService) SendVerificationCode(phone, verificationType strin
 	// 2. 检查发送频率（1分钟内只能发送一次）
 	var lastCode models.VerificationCode
 	oneMinuteAgo := time.Now().Add(-1 * time.Minute)
-	
+
 	if err := s.db.Where("phone = ? AND created_at > ? AND type = ?", phone, oneMinuteAgo, verificationType).
 		Order("created_at DESC").First(&lastCode).Error; err == nil {
 		return fmt.Errorf("发送过于频繁，请1分钟后再试")
@@ -38,7 +38,7 @@ func (s *VerificationService) SendVerificationCode(phone, verificationType strin
 
 	// 3. 生成6位验证码
 	code := fmt.Sprintf("%06d", rand.Intn(1000000))
-	
+
 	// 4. 保存验证码
 	verificationCode := models.VerificationCode{
 		Phone:     phone,
@@ -63,7 +63,7 @@ func (s *VerificationService) SendVerificationCode(phone, verificationType strin
 // VerifyCode 验证验证码
 func (s *VerificationService) VerifyCode(phone, code, verificationType string) error {
 	var verificationCode models.VerificationCode
-	
+
 	// 查找最新的未使用验证码
 	if err := s.db.Where("phone = ? AND code = ? AND type = ? AND is_used = ? AND expires_at > ?",
 		phone, code, verificationType, false, time.Now()).
@@ -100,11 +100,11 @@ func (s *VerificationService) ResetPasswordByPhone(phone, newPassword string) er
 
 	// 3. 记录重置日志
 	resetLog := models.ResetPasswordLog{
-		UserID:  fmt.Sprintf("%010d", user.ID),
+		UserID:  user.ID,
 		Phone:   phone,
 		ResetAt: time.Now(),
 	}
-	
+
 	s.db.Create(&resetLog)
 
 	return nil

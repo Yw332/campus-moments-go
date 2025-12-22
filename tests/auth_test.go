@@ -35,13 +35,13 @@ type ChangePasswordRequest struct {
 func setupTestRouter() *gin.Engine {
 	gin.SetMode(gin.TestMode)
 	router := gin.New()
-	
+
 	// 初始化测试数据库
 	models.AutoMigrate()
-	
+
 	// 设置路由
 	routes.SetupRoutes(router)
-	
+
 	return router
 }
 
@@ -128,10 +128,10 @@ func TestUserLogin(t *testing.T) {
 	router.ServeHTTP(w, req)
 
 	tests := []struct {
-		name           string
-		request        LoginRequest
-		expectedCode   int
-		expectToken    bool
+		name         string
+		request      LoginRequest
+		expectedCode int
+		expectToken  bool
 	}{
 		{
 			name: "用户名登录成功",
@@ -205,7 +205,7 @@ func TestGetUserProfile(t *testing.T) {
 		Phone:    "13800138004",
 		Password: "ProfileTest123",
 	}
-	
+
 	// 注册
 	body, _ := json.Marshal(registerReq)
 	req, _ := http.NewRequest("POST", "/auth/register", bytes.NewBuffer(body))
@@ -287,7 +287,7 @@ func TestChangePassword(t *testing.T) {
 		Phone:    "13800138005",
 		Password: "OldPassword123",
 	}
-	
+
 	// 注册
 	body, _ := json.Marshal(registerReq)
 	req, _ := http.NewRequest("POST", "/auth/register", bytes.NewBuffer(body))
@@ -312,10 +312,10 @@ func TestChangePassword(t *testing.T) {
 	token := loginResponse["data"].(map[string]interface{})["token"].(string)
 
 	tests := []struct {
-		name           string
-		request        ChangePasswordRequest
-		token          string
-		expectedCode   int
+		name         string
+		request      ChangePasswordRequest
+		token        string
+		expectedCode int
 	}{
 		{
 			name: "成功修改密码",
@@ -380,7 +380,7 @@ func TestHealthCheck(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Equal(t, float64(0), response["code"])
 	assert.Equal(t, "success", response["message"])
-	
+
 	data := response["data"].(map[string]interface{})
 	assert.Contains(t, data, "status")
 	assert.Contains(t, data, "service")

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"regexp"
+	"strconv"
 	"time"
 
 	"github.com/Yw332/campus-moments-go/internal/models"
@@ -247,7 +248,11 @@ func (s *AuthService) Login(req *LoginRequest) (*LoginResponse, error) {
 	}
 
 	// 生成JWT token
-	token, err := jwt.GenerateToken(user.ID, user.Username)
+	uid, err := strconv.ParseInt(user.ID, 10, 64)
+	if err != nil {
+		return nil, fmt.Errorf("解析用户ID失败: %v", err)
+	}
+	token, err := jwt.GenerateToken(uid, user.Username)
 	if err != nil {
 		return nil, fmt.Errorf("生成token失败: %v", err)
 	}
@@ -270,7 +275,8 @@ func (s *AuthService) GetUserByID(userID int64) (*models.User, error) {
 	db := database.GetDB()
 	var user models.User
 
-	if err := db.Where("id = ? AND status = 1", userID).First(&user).Error; err != nil {
+	idStr := strconv.FormatInt(userID, 10)
+	if err := db.Where("id = ? AND status = 1", idStr).First(&user).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			return nil, errors.New("用户不存在")
 		}
@@ -305,7 +311,8 @@ func (s *AuthService) UpdatePassword(userID int64, oldPassword, newPassword stri
 	db := database.GetDB()
 	var user models.User
 
-	if err := db.Where("id = ?", userID).First(&user).Error; err != nil {
+	idStr := strconv.FormatInt(userID, 10)
+	if err := db.Where("id = ?", idStr).First(&user).Error; err != nil {
 		return errors.New("用户不存在")
 	}
 

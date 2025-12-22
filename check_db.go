@@ -3,8 +3,8 @@ package main
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	_ "github.com/go-sql-driver/mysql"
+	"log"
 )
 
 func main() {
@@ -13,7 +13,7 @@ func main() {
 		log.Fatal(err)
 	}
 	defer db.Close()
-	
+
 	// 查看users表结构
 	rows, err := db.Query("DESCRIBE users")
 	if err != nil {
@@ -27,7 +27,7 @@ func main() {
 			fmt.Printf("%s: %s\n", field, typ)
 		}
 	}
-	
+
 	// 查看moments表结构（如果存在）
 	rows2, err := db.Query("DESCRIBE moments")
 	if err != nil {

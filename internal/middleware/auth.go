@@ -72,7 +72,11 @@ func AuthMiddleware() gin.HandlerFunc {
 		}
 
 		// 将用户信息设置到上下文（转换为字符串ID）
+<<<<<<< HEAD
 		c.Set("userID", claims.UserID) // ID已经是字符串或者int64，这里直接用
+=======
+		c.Set("userID", fmt.Sprintf("%010d", claims.UserID))
+>>>>>>> be7109d45b16980427c35fc3f6c3874bbda68e13
 		c.Set("username", claims.Username)
 		c.Set("claims", claims)
 

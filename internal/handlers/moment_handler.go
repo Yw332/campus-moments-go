@@ -55,7 +55,7 @@ func CreateMoment(c *gin.Context) {
 func GetMoments(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
-	
+
 	// 支持按用户ID筛选
 	var userID *string
 	if uidStr := c.Query("userId"); uidStr != "" {
@@ -168,11 +168,11 @@ func UpdateMoment(c *gin.Context) {
 	if err != nil {
 		statusCode := http.StatusInternalServerError
 		message := err.Error()
-		
+
 		if err.Error() == "动态不存在或无权限修改" {
 			statusCode = http.StatusNotFound
 		}
-		
+
 		c.JSON(statusCode, gin.H{
 			"code":    statusCode,
 			"message": message,
@@ -215,11 +215,11 @@ func DeleteMoment(c *gin.Context) {
 	if err := momentService.DeleteMoment(uid, momentID); err != nil {
 		statusCode := http.StatusInternalServerError
 		message := err.Error()
-		
+
 		if err.Error() == "动态不存在或无权限删除" {
 			statusCode = http.StatusNotFound
 		}
-		
+
 		c.JSON(statusCode, gin.H{
 			"code":    statusCode,
 			"message": message,

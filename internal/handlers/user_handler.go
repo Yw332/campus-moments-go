@@ -1,5 +1,6 @@
 package handlers
 
+<<<<<<< HEAD
 import (
 	"net/http"
 
@@ -57,3 +58,6 @@ func UpdateUserProfile(c *gin.Context) {
 		},
 	})
 }
+=======
+// 用户相关函数在 auth_handler.go 中已实现，避免重复定义
+>>>>>>> be7109d45b16980427c35fc3f6c3874bbda68e13

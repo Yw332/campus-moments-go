@@ -15,8 +15,8 @@ import (
 )
 
 var (
-	DB    *sql.DB // 原生SQL连接
-	GORM  *gorm.DB // GORM连接
+	DB   *sql.DB  // 原生SQL连接
+	GORM *gorm.DB // GORM连接
 )
 
 // Init 初始化数据库连接
@@ -129,14 +129,14 @@ func IsConnected() bool {
 	if GORM == nil {
 		return false
 	}
-	
+
 	sqlDB, err := GORM.DB()
 	if err != nil {
 		return false
 	}
-	
+
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-	
+
 	return sqlDB.PingContext(ctx) == nil
 }
