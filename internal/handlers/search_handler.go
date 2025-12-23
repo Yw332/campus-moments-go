@@ -37,7 +37,7 @@ func SearchContent(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"code":    0,
+		"code":    200,
 		"message": "success",
 		"data":    results,
 	})
@@ -56,7 +56,7 @@ func GetHotWords(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"code":    0,
+		"code":    200,
 		"message": "success",
 		"data":    hotWords,
 	})
@@ -86,7 +86,7 @@ func GetSearchHistory(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"code":    0,
+		"code":    200,
 		"message": "success",
 		"data":    history,
 	})
@@ -128,7 +128,7 @@ func SaveSearchHistory(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"code":    0,
+		"code":    200,
 		"message": "保存成功",
 		"data":    nil,
 	})
@@ -165,7 +165,7 @@ func GetFilteredContent(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"code":    0,
+		"code":    200,
 		"message": "success",
 		"data":    results,
 	})
@@ -186,7 +186,7 @@ func GetSearchSuggestions(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"code":    0,
+		"code":    200,
 		"message": "success",
 		"data":    suggestions,
 	})
