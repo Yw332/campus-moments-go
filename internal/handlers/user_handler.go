@@ -44,16 +44,22 @@ func UpdateUserProfile(c *gin.Context) {
 		return
 	}
 
+	// 格式化 AvatarUpdatedAt
+	avatarUpdatedAt := ""
+	if user.AvatarUpdatedAt != nil {
+		avatarUpdatedAt = user.AvatarUpdatedAt.Format("2006-01-02 15:04:05")
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"code":    200,
 		"message": "更新成功",
 		"data": gin.H{
-			"userId":   user.ID,
-			"username": user.Username,
-			"nickname": user.Nickname,
-			"avatar":   user.Avatar,
-			"gender":   user.Gender,
-			"bio":      user.Bio,
+			"userId":          user.ID,
+			"username":        user.Username,
+			"avatar":          user.Avatar,
+			"avatarType":      user.AvatarType,
+			"avatarUpdatedAt":  avatarUpdatedAt,
+			"signature":       user.Signature,
 		},
 	})
 }

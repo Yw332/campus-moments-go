@@ -155,17 +155,24 @@ func GetProfile(c *gin.Context) {
 		return
 	}
 
+	// 格式化 AvatarUpdatedAt
+	avatarUpdatedAt := ""
+	if user.AvatarUpdatedAt != nil {
+		avatarUpdatedAt = user.AvatarUpdatedAt.Format("2006-01-02 15:04:05")
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"code":    200,
 		"message": "获取成功",
 		"data": gin.H{
-			"userId":   user.ID,
-			"username": user.Username,
-			"phone":    user.Phone,
-			"nickname": user.Nickname,
-			"avatar":   user.Avatar,
-			"gender":   user.Gender,
-			"bio":      user.Bio,
+			"userId":          user.ID,
+			"username":        user.Username,
+			"phone":           user.Phone,
+			"avatar":          user.Avatar,
+			"avatarType":      user.AvatarType,
+			"avatarUpdatedAt":  avatarUpdatedAt,
+			"signature":       user.Signature,
+			"test":           "这是静态响应，验证代码生效",
 		},
 	})
 }

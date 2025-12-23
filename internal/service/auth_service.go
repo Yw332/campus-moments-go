@@ -31,10 +31,8 @@ type RegisterRequest struct {
 
 // UpdateProfileRequest 更新资料请求结构
 type UpdateProfileRequest struct {
-	Nickname string `json:"nickname"`
-	Avatar   string `json:"avatar"`
-	Gender   int    `json:"gender"`
-	Bio      string `json:"bio"`
+	Avatar    string `json:"avatar"`
+	Signature string `json:"signature"`
 }
 
 // UpdateProfile 更新用户资料
@@ -47,17 +45,13 @@ func (s *AuthService) UpdateProfile(userIDStr string, req *UpdateProfileRequest)
 	}
 
 	updates := make(map[string]interface{})
-	if req.Nickname != "" {
-		updates["nickname"] = req.Nickname
-	}
 	if req.Avatar != "" {
 		updates["avatar"] = req.Avatar
+		updates["avatar_type"] = 1 // 自定义头像
+		updates["avatar_updated_at"] = time.Now()
 	}
-	if req.Gender != 0 {
-		updates["gender"] = req.Gender
-	}
-	if req.Bio != "" {
-		updates["bio"] = req.Bio
+	if req.Signature != "" {
+		updates["signature"] = req.Signature
 	}
 	updates["updated_at"] = time.Now()
 
@@ -66,17 +60,19 @@ func (s *AuthService) UpdateProfile(userIDStr string, req *UpdateProfileRequest)
 	}
 
 	// 更新内存中的user对象，以便返回最新数据
-	if val, ok := updates["nickname"].(string); ok {
-		user.Nickname = val
-	}
 	if val, ok := updates["avatar"].(string); ok {
 		user.Avatar = val
 	}
-	if val, ok := updates["gender"].(int); ok {
-		user.Gender = val
+	if val, ok := updates["avatar_type"].(int); ok {
+		user.AvatarType = val
 	}
-	if val, ok := updates["bio"].(string); ok {
-		user.Bio = val
+	if val, ok := updates["avatar_updated_at"]; ok {
+		if t, ok := val.(time.Time); ok {
+			user.AvatarUpdatedAt = &t
+		}
+	}
+	if val, ok := updates["signature"].(string); ok {
+		user.Signature = val
 	}
 
 	return &user, nil
