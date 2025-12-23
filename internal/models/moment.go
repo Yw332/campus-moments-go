@@ -90,5 +90,5 @@ func (m *MediaItems) Scan(value interface{}) error {
 
 // 表名
 func (Moment) TableName() string {
-	return "moments"
+	return "posts"
 }
