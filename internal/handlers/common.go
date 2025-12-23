@@ -10,7 +10,7 @@ import (
 // Home 根路径
 func Home(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
-		"code":    0,
+		"code":    200,
 		"message": "success",
 		"data": gin.H{
 			"message": "Campus Moments Go API 运行中",
@@ -32,7 +32,7 @@ func HealthCheck(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"code":    0,
+		"code":    200,
 		"message": "success",
 		"data": gin.H{
 			"status":   status,
