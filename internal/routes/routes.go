@@ -22,6 +22,9 @@ func SetupRoutes(router *gin.Engine) {
 
 	// 公开的动态列表（不需要登录也能看）
 	router.GET("/moments", handlers.GetMoments)
+	
+	// 公开的搜索功能（不需要登录）
+	router.GET("/search/hot-words", handlers.GetHotWords)
 
 	// 管理端登录
 	router.POST("/admin/login", handlers.AdminLogin)

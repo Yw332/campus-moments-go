@@ -2,20 +2,17 @@ package service
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/Yw332/campus-moments-go/internal/models"
 	"github.com/Yw332/campus-moments-go/pkg/database"
-	"gorm.io/gorm"
 )
 
 type SearchService struct {
-	db *gorm.DB
 }
 
 func NewSearchService() *SearchService {
-	return &SearchService{
-		db: database.GetDB(),
-	}
+	return &SearchService{}
 }
 
 type SearchRequest struct {
@@ -47,7 +44,23 @@ type Pagination struct {
 }
 
 // SearchContent 搜索内容
-func (s *SearchService) SearchContent(keyword string, page, pageSize int) (*SearchResponse, error) {
+func (s *SearchService) SearchContent(keyword string, page, pageSize int, sortBy string) (*SearchResponse, error) {
+	// 获取数据库连接
+	db := database.GetDB()
+	if db == nil {
+		return &SearchResponse{
+			Moments: []models.Moment{},
+			Users:   []models.User{},
+			Pagination: Pagination{
+				Page:     page,
+				PageSize: pageSize,
+				Total:    0,
+			},
+		}, nil
+	}
+	
+
+
 	if page <= 0 {
 		page = 1
 	}
@@ -63,9 +76,22 @@ func (s *SearchService) SearchContent(keyword string, page, pageSize int) (*Sear
 	var totalUsers int64
 
 	// 搜索动态
-	momentQuery := s.db.Where("content LIKE ? AND status = 1", "%"+keyword+"%").
-		Preload("Author").
-		Order("created_at DESC")
+	momentQuery := db.Table("moments").Where("content LIKE ?", "%"+keyword+"%")
+
+	// 根据排序方式设置排序
+	switch sortBy {
+	case "hottest":
+		// 最热：按点赞数和评论数综合排序
+		momentQuery = momentQuery.Order("(like_count + comment_count * 2) DESC, created_at DESC")
+	case "comprehensive":
+		// 综合：考虑时间、点赞、评论数
+		momentQuery = momentQuery.Order("(like_count * 3 + comment_count * 2 + TIMESTAMPDIFF(HOUR, created_at, NOW()) / 24) DESC")
+	case "latest", "":
+		// 最新：按时间排序（默认）
+		momentQuery = momentQuery.Order("created_at DESC")
+	default:
+		momentQuery = momentQuery.Order("created_at DESC")
+	}
 
 	// 统计动态总数
 	momentQuery.Count(&totalMoments)
@@ -76,7 +102,7 @@ func (s *SearchService) SearchContent(keyword string, page, pageSize int) (*Sear
 	}
 
 	// 搜索用户
-	userQuery := s.db.Where("username LIKE ? OR phone LIKE ?", "%"+keyword+"%", "%"+keyword+"%")
+	userQuery := db.Table("users").Where("username LIKE ? OR phone LIKE ?", "%"+keyword+"%", "%"+keyword+"%")
 
 	// 统计用户总数
 	userQuery.Count(&totalUsers)
@@ -92,47 +118,135 @@ func (s *SearchService) SearchContent(keyword string, page, pageSize int) (*Sear
 		Pagination: Pagination{
 			Page:     page,
 			PageSize: pageSize,
-			Total:    totalMoments + totalUsers, // 总数只是示例
+			Total:    totalMoments + totalUsers,
 		},
 	}, nil
 }
 
 // GetHotWords 获取热词
 func (s *SearchService) GetHotWords() ([]string, error) {
-	// 这里简化实现，实际应该基于搜索历史统计
-	hotWords := []string{
-		"校园",
-		"活动",
-		"学习",
-		"美食",
-		"运动",
-		"兼职",
-		"考试",
-		"社团",
-		"室友",
-		"考研",
+	// 获取数据库连接
+	db := database.GetDB()
+	if db == nil {
+		// 返回默认热词
+		return []string{
+			"校园",
+			"活动", 
+			"学习",
+			"美食",
+			"运动",
+			"兼职",
+			"考试",
+			"社团",
+			"室友",
+			"考研",
+		}, nil
 	}
+
+	// 基于今日搜索历史统计热词
+	var hotWords []string
+	
+	// 获取今日搜索最多的关键词
+	err := db.Table("search_history").
+		Select("keyword, COUNT(*) as count").
+		Where("created_at >= DATE_FORMAT(NOW(), '%Y-%m-%d')").
+		Group("keyword").
+		Order("count DESC").
+		Limit(10).
+		Pluck("keyword", &hotWords).Error
+	
+	// 如果没有搜索历史，返回默认热词
+	if err != nil || len(hotWords) == 0 {
+		hotWords = []string{
+			"校园",
+			"活动", 
+			"学习",
+			"美食",
+			"运动",
+			"兼职",
+			"考试",
+			"社团",
+			"室友",
+			"考研",
+		}
+	}
+	
 	return hotWords, nil
 }
 
 // GetSearchHistory 获取搜索历史
 func (s *SearchService) GetSearchHistory(userID string) ([]string, error) {
-	// 简化实现，实际应该有搜索历史表
-	// 这里返回一些模拟数据
-	history := []string{
-		"校园活动",
-		"学习方法",
-		"美食推荐",
+	// 获取数据库连接
+	db := database.GetDB()
+	if db == nil {
+		// 返回默认空列表
+		return []string{}, nil
 	}
-	return history, nil
+
+	var keywords []string
+	
+	// 获取用户最近30天的搜索历史，去重并按时间倒序
+	type HistoryResult struct {
+		Keyword string
+		LatestTime time.Time
+	}
+	var results []HistoryResult
+	
+	err := db.Table("search_history").
+		Select("keyword, MAX(created_at) as latest_time").
+		Where("user_id = ? AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)", userID).
+		Group("keyword").
+		Order("latest_time DESC").
+		Limit(20).
+		Find(&results).Error
+		
+	if err != nil {
+		// 如果表不存在或其他错误，返回空列表而不是错误
+		return []string{}, nil
+	}
+	
+	// 提取关键词
+	for _, result := range results {
+		keywords = append(keywords, result.Keyword)
+	}
+	
+	if err != nil {
+		// 如果表不存在或其他错误，返回空列表而不是错误
+		return []string{}, nil
+	}
+	
+	return keywords, nil
 }
 
 // SaveSearchHistory 保存搜索历史
 func (s *SearchService) SaveSearchHistory(userID, keyword string) error {
-	// 简化实现，实际应该保存到搜索历史表
-	// 这里只是记录日志
-	fmt.Printf("用户 %s 搜索了: %s\n", userID, keyword)
-	return nil
+	// 获取数据库连接
+	db := database.GetDB()
+	if db == nil {
+		// 记录日志但不报错
+		fmt.Printf("数据库不可用，跳过保存搜索历史: %s\n", keyword)
+		return nil
+	}
+
+	// 检查是否已存在相同的搜索记录，避免重复
+	var existingHistory models.SearchHistory
+	err := db.Table("search_history").Where("user_id = ? AND keyword = ? AND DATE(created_at) = CURDATE()", 
+		userID, keyword).First(&existingHistory).Error
+	
+	if err == nil {
+		// 今天已搜索过相同关键词，只更新时间
+		return db.Table("search_history").Where("id = ?", existingHistory.ID).
+			Update("created_at", time.Now()).Error
+	}
+	
+	// 创建新的搜索历史记录
+	history := models.SearchHistory{
+		UserID:    userID,
+		Keyword:   keyword,
+		CreatedAt: time.Now(),
+	}
+	
+	return db.Table("search_history").Create(&history).Error
 }
 
 // GetFilteredContent 获取筛选内容
@@ -146,7 +260,20 @@ func (s *SearchService) GetFilteredContent(filter *FilterRequest) (*SearchRespon
 
 	offset := (filter.Page - 1) * filter.PageSize
 
-	query := s.db.Where("status = 1").Preload("Author")
+	db := database.GetDB()
+	if db == nil {
+		return &SearchResponse{
+			Moments: []models.Moment{},
+			Users:   []models.User{},
+			Pagination: Pagination{
+				Page:     filter.Page,
+				PageSize: filter.PageSize,
+				Total:    0,
+			},
+		}, nil
+	}
+
+	query := db.Table("moments").Where("1=1")
 
 	// 按可见性筛选
 	if filter.Visibility != "" {
@@ -204,13 +331,31 @@ func (s *SearchService) GetTrendingKeywords(days int) ([]string, error) {
 
 // GetSearchSuggestions 获取搜索建议
 func (s *SearchService) GetSearchSuggestions(keyword string) ([]string, error) {
+	// 获取数据库连接
+	db := database.GetDB()
+	if db == nil {
+		// 返回默认热词
+		return []string{
+			"校园",
+			"活动", 
+			"学习",
+			"美食",
+			"运动",
+			"兼职",
+			"考试",
+			"社团",
+			"室友",
+			"考研",
+		}, nil
+	}
+
 	if keyword == "" {
 		return s.GetHotWords()
 	}
 
 	var suggestions []string
 	// 从用户名和内容中获取建议
-	if err := s.db.Model(&models.User{}).
+	if err := db.Table("users").
 		Where("username LIKE ?", "%"+keyword+"%").
 		Limit(5).
 		Pluck("username", &suggestions).Error; err != nil {

@@ -24,9 +24,10 @@ func SearchContent(c *gin.Context) {
 
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
+	sortBy := c.DefaultQuery("sortBy", "latest") // latest, hottest, comprehensive
 
 	// 执行搜索
-	results, err := searchService.SearchContent(keyword, page, pageSize)
+	results, err := searchService.SearchContent(keyword, page, pageSize, sortBy)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
 			"code":    500,
@@ -34,6 +35,13 @@ func SearchContent(c *gin.Context) {
 			"data":    nil,
 		})
 		return
+	}
+
+	// 异步保存搜索历史（如果用户已登录）
+	if userID, exists := c.Get("userID"); exists {
+		go func() {
+			_ = searchService.SaveSearchHistory(userID.(string), keyword)
+		}()
 	}
 
 	c.JSON(http.StatusOK, gin.H{
