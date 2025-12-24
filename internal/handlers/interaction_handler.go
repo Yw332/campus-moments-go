@@ -56,6 +56,42 @@ func GetMomentComments(c *gin.Context) {
 	})
 }
 
+// GetLikeList 获取点赞列表
+func GetLikeList(c *gin.Context) {
+	var req service.GetLikeListRequest
+	if err := c.ShouldBindQuery(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code": 400, 
+			"message": "参数错误", 
+			"data": nil,
+		})
+		return
+	}
+
+	likes, total, err := interactionService.GetLikeList(&req)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"code": 500, 
+			"message": err.Error(), 
+			"data": nil,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"code": 200,
+		"message": "获取成功",
+		"data": gin.H{
+			"list": likes,
+			"pagination": gin.H{
+				"page":     req.Page,
+				"pageSize": req.PageSize,
+				"total":    total,
+			},
+		},
+	})
+}
+
 // DeleteComment 删除评论
 func DeleteComment(c *gin.Context) {
 	userID, _ := c.Get("userID")

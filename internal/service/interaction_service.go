@@ -143,6 +143,71 @@ func (s *InteractionService) GetMomentComments(momentID int64) ([]models.Comment
 	return comments, err
 }
 
+// GetLikeListRequest 获取点赞列表请求
+type GetLikeListRequest struct {
+	TargetType int `form:"targetType" binding:"required"` // 目标类型：1-动态，2-评论
+	TargetID   int `form:"targetId" binding:"required"`   // 目标ID
+	Page       int `form:"page"`                            // 页码，默认1
+	PageSize   int `form:"pageSize"`                        // 每页大小，默认10
+}
+
+// LikeUserInfo 点赞用户信息
+type LikeUserInfo struct {
+	ID       string `json:"id"`
+	Username string `json:"username"`
+	Avatar   string `json:"avatar"`
+	LikedAt  string `json:"likedAt"`
+}
+
+// GetLikeList 获取点赞列表
+func (s *InteractionService) GetLikeList(req *GetLikeListRequest) ([]LikeUserInfo, int64, error) {
+	db := database.GetDB()
+	
+	// 设置默认分页
+	if req.Page <= 0 {
+		req.Page = 1
+	}
+	if req.PageSize <= 0 {
+		req.PageSize = 10
+	}
+	
+	var likes []models.Like
+	var total int64
+	
+	// 查询总数
+	err := db.Model(&models.Like{}).
+		Where("target_type = ? AND target_id = ?", req.TargetType, req.TargetID).
+		Count(&total).Error
+	if err != nil {
+		return nil, 0, err
+	}
+	
+	// 查询点赞记录，预加载用户信息
+	offset := (req.Page - 1) * req.PageSize
+	err = db.Where("target_type = ? AND target_id = ?", req.TargetType, req.TargetID).
+		Preload("User").
+		Order("created_at desc"). // 按点赞时间倒序
+		Offset(offset).
+		Limit(req.PageSize).
+		Find(&likes).Error
+	if err != nil {
+		return nil, 0, err
+	}
+	
+	// 转换为返回格式
+	result := make([]LikeUserInfo, len(likes))
+	for i, like := range likes {
+		result[i] = LikeUserInfo{
+			ID:       like.User.ID,
+			Username: like.User.Username,
+			Avatar:   like.User.Avatar,
+			LikedAt:  like.CreatedAt.Format("2006-01-02 15:04:05"),
+		}
+	}
+	
+	return result, total, nil
+}
+
 // DeleteComment 删除评论
 func (s *InteractionService) DeleteComment(userID string, commentID int64) error {
 	db := database.GetDB()

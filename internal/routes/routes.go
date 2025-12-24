@@ -84,6 +84,7 @@ func SetupRoutes(router *gin.Engine) {
 		api.POST("/comments", handlers.CreateComment)
 		api.DELETE("/comments/:id", handlers.DeleteComment)
 		api.POST("/likes", handlers.ToggleLike)
+		api.GET("/likes", handlers.GetLikeList)
 
 		// 用户相关
 		users := api.Group("/users")
