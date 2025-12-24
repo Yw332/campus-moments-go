@@ -48,10 +48,10 @@ func (s *MomentService) CreateMoment(userID string, req *CreateMomentRequest) (*
 	}
 
 	moment := &models.Moment{
-		Content:      req.Content,
+		UserID:       userID,
 		AuthorID:     userID,
+		Content:      req.Content,
 		Tags:         models.Tags(req.Tags),
-		Media:        models.MediaItems(req.Media),
 		Visibility:   req.Visibility,
 		LikeCount:    0,
 		CommentCount: 0,
@@ -121,7 +121,7 @@ func (s *MomentService) ListMoments(page, pageSize int, userID *string) ([]model
 
 	// 如果指定了用户ID，则查询该用户的动态
 	if userID != nil {
-		query = query.Where("author_id = ?", *userID)
+		query = query.Where("user_id = ?", *userID)
 	}
 
 	// 查询总数

@@ -62,7 +62,8 @@ func GetMoments(c *gin.Context) {
 		userID = &uidStr
 	}
 
-	list, total, err := momentService.ListMoments(page, pageSize, userID)
+	// 使用简单版本直接获取数据
+	list, total, err := getMomentsFromDB(page, pageSize)
 	if err != nil {
 		c.JSON(http.StatusOK, gin.H{
 			"code":    200,

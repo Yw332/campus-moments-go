@@ -7,6 +7,9 @@ import (
 )
 
 func SetupRoutes(router *gin.Engine) {
+	// 添加CORS中间件到所有路由
+	router.Use(middleware.CORSMiddleware())
+	
 	// ========== 公共路由（无需认证）==========
 	router.GET("/", handlers.Home)
 	router.GET("/health", handlers.HealthCheck)

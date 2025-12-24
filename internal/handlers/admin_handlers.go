@@ -651,20 +651,8 @@ func ListContents(c *gin.Context) {
 			tags = moment.Tags
 		}
 		
-		// 转换Media
+		// Media字段暂不处理
 		media := []MediaItem{}
-		if moment.Media != nil {
-			for _, m := range moment.Media {
-				media = append(media, MediaItem{
-					URL:      m.URL,
-					Type:     m.Type,
-					Size:     m.Size,
-					Width:    m.Width,
-					Height:   m.Height,
-					Duration: m.Duration,
-				})
-			}
-		}
 
 		authorName := ""
 		authorAvatar := ""
@@ -681,8 +669,8 @@ func ListContents(c *gin.Context) {
 			AuthorAvatar: authorAvatar,
 			Tags:         tags,
 			Media:        media,
-			LikeCount:    moment.LikeCount,
-			CommentCount: moment.CommentCount,
+			LikeCount:    int(moment.LikeCount),
+			CommentCount: int(moment.CommentCount),
 			Status:       moment.Status,
 			Visibility:   moment.Visibility,
 			CreatedAt:    moment.CreatedAt.Format("2006-01-02 15:04:05"),
@@ -749,18 +737,7 @@ func GetContentDetail(c *gin.Context) {
 	}
 	
 	media := []MediaItem{}
-	if moment.Media != nil {
-		for _, m := range moment.Media {
-			media = append(media, MediaItem{
-				URL:      m.URL,
-				Type:     m.Type,
-				Size:     m.Size,
-				Width:    m.Width,
-				Height:   m.Height,
-				Duration: m.Duration,
-			})
-		}
-	}
+	// moment.Media现在是字符串，暂时不处理
 
 	authorName := ""
 	authorAvatar := ""
@@ -777,8 +754,8 @@ func GetContentDetail(c *gin.Context) {
 		AuthorAvatar: authorAvatar,
 		Tags:         tags,
 		Media:        media,
-		LikeCount:    moment.LikeCount,
-		CommentCount: moment.CommentCount,
+		LikeCount:    int(moment.LikeCount),
+		CommentCount: int(moment.CommentCount),
 		Status:       moment.Status,
 		Visibility:   moment.Visibility,
 		CreatedAt:    moment.CreatedAt.Format("2006-01-02 15:04:05"),

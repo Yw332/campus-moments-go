@@ -28,12 +28,12 @@ func main() {
 		}
 	}
 
-	// 查看moments表结构（如果存在）
-	rows2, err := db.Query("DESCRIBE moments")
+	// 查看posts表结构（如果存在）
+	rows2, err := db.Query("DESCRIBE posts")
 	if err != nil {
-		log.Printf("查询moments表失败: %v", err)
+		log.Printf("查询posts表失败: %v", err)
 	} else {
-		fmt.Println("\n=== moments表结构 ===")
+		fmt.Println("\n=== posts表结构 ===")
 		for rows2.Next() {
 			var field, typ, null, key, extra string
 			var def interface{}

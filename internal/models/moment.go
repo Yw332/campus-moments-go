@@ -6,22 +6,31 @@ import (
 	"time"
 )
 
-// Moment 动态模型
+// Moment 动态模型 (对应 posts 表)
 type Moment struct {
-	ID           int64      `json:"id" gorm:"primaryKey;autoIncrement"`
-	Content      string     `json:"content" gorm:"type:text;not null"`
-	AuthorID     string     `json:"authorId" gorm:"type:char(10);not null;index"`
-	Tags         Tags       `json:"tags" gorm:"type:json"`
-	Media        MediaItems `json:"media" gorm:"type:json"`
-	Visibility   int        `json:"visibility" gorm:"default:0;comment:0公开/1好友/2私密"`
-	LikeCount    int        `json:"likeCount" gorm:"default:0"`
-	CommentCount int        `json:"commentCount" gorm:"default:0"`
-	Status       int        `json:"status" gorm:"default:1;comment:1正常/2删除"`
-	CreatedAt    time.Time  `json:"createdAt"`
-	UpdatedAt    time.Time  `json:"updatedAt"`
+	ID               int64      `json:"id" gorm:"primaryKey;autoIncrement"`
+	UserID           string     `json:"userId" gorm:"column:user_id;type:char(10);not null;index"`
+	AuthorID         string     `json:"authorId" gorm:"column:author_id;type:char(10);index"`  // 保持兼容性
+	Title            string     `json:"title" gorm:"column:title;type:varchar(100)"`
+	Content          string     `json:"content" gorm:"column:content;type:text;not null"`
+	Images           Tags       `json:"images" gorm:"column:images;type:json"`
+	Video            string     `json:"video" gorm:"column:video;type:varchar(200)"`
+	Visibility       int        `json:"visibility" gorm:"column:visibility;type:TINYINT;default:0"`  // 0公开/1好友/2私密
+	Status           int        `json:"status" gorm:"column:status;type:TINYINT;default:1"`         // 1正常/2删除
+	Tags             Tags       `json:"tags" gorm:"column:tags;type:json"`
+	LikedUsers       Tags       `json:"likedUsers" gorm:"column:liked_users;type:json"`
+	CommentsSummary  string     `json:"commentsSummary" gorm:"column:comments_summary;type:json"`
+	LikeCount        int64      `json:"likeCount" gorm:"column:like_count;default:0"`
+	CommentCount     int64      `json:"commentCount" gorm:"column:comment_count;default:0"`
+	ViewCount        int64      `json:"viewCount" gorm:"column:view_count;default:0"`
+	CreatedAt        time.Time  `json:"createdAt" gorm:"column:created_at"`
+	UpdatedAt        time.Time  `json:"updatedAt" gorm:"column:updated_at"`
+
+	// 兼容字段
+	Media            Tags       `json:"media" gorm:"column:media;type:json"`  // 兼容旧的media字段
 
 	// 关联字段
-	Author *User `json:"author,omitempty" gorm:"foreignKey:AuthorID;constraint:false"`
+	Author *User `json:"author,omitempty" gorm:"foreignKey:AuthorID;references:ID;constraint:false"`
 }
 
 // Tags 标签数组类型
