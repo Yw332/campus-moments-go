@@ -39,8 +39,8 @@ func main() {
 	// 4. 检查数据库连接状态
 	if database.IsConnected() {
 		log.Println("✅ 数据库连接正常")
-		// 自动迁移数据库表结构
-		models.AutoMigrate()
+		log.Println("🔒 使用现有数据库表结构，不进行自动迁移")
+		// models.AutoMigrate() // 注释掉自动迁移，避免创建新表
 	} else {
 		log.Println("⚠️  数据库未连接，某些功能可能不可用")
 	}

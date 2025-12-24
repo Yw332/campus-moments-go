@@ -6,8 +6,10 @@ import (
 	"github.com/Yw332/campus-moments-go/pkg/database"
 )
 
-// AutoMigrate 自动迁移数据库表结构
+// AutoMigrate 自动迁移数据库表结构（已禁用）
 func AutoMigrate() {
+	log.Println("🚫 AutoMigrate 已禁用，使用现有数据库结构")
+	return
 	db := database.GetDB()
 	if db == nil {
 		log.Println("⚠️  数据库未连接，跳过迁移")

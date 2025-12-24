@@ -56,11 +56,11 @@ func GetMoments(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
 
-	// 支持按用户ID筛选
-	var userID *string
-	if uidStr := c.Query("userId"); uidStr != "" {
-		userID = &uidStr
-	}
+	// 暂时不支持用户ID筛选
+	// var userID *string
+	// if uidStr := c.Query("userId"); uidStr != "" {
+	//	userID = &uidStr
+	// }
 
 	// 使用简单版本直接获取数据
 	list, total, err := getMomentsFromDB(page, pageSize)
