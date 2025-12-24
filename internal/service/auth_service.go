@@ -31,6 +31,7 @@ type RegisterRequest struct {
 
 // UpdateProfileRequest 更新资料请求结构
 type UpdateProfileRequest struct {
+	Username  string `json:"username"`
 	Avatar    string `json:"avatar"`
 	Signature string `json:"signature"`
 }
@@ -45,6 +46,9 @@ func (s *AuthService) UpdateProfile(userIDStr string, req *UpdateProfileRequest)
 	}
 
 	updates := make(map[string]interface{})
+	if req.Username != "" {
+		updates["username"] = req.Username
+	}
 	if req.Avatar != "" {
 		updates["avatar"] = req.Avatar
 		updates["avatar_type"] = 1 // 自定义头像
@@ -59,20 +63,9 @@ func (s *AuthService) UpdateProfile(userIDStr string, req *UpdateProfileRequest)
 		return nil, fmt.Errorf("更新资料失败: %v", err)
 	}
 
-	// 更新内存中的user对象，以便返回最新数据
-	if val, ok := updates["avatar"].(string); ok {
-		user.Avatar = val
-	}
-	if val, ok := updates["avatar_type"].(int); ok {
-		user.AvatarType = val
-	}
-	if val, ok := updates["avatar_updated_at"]; ok {
-		if t, ok := val.(time.Time); ok {
-			user.AvatarUpdatedAt = &t
-		}
-	}
-	if val, ok := updates["signature"].(string); ok {
-		user.Signature = val
+	// 重新从数据库加载用户信息，确保返回最新数据
+	if err := db.Where("id = ?", userIDStr).First(&user).Error; err != nil {
+		return nil, fmt.Errorf("重新加载用户信息失败: %v", err)
 	}
 
 	return &user, nil
