@@ -48,16 +48,19 @@ func (s *MomentService) CreateMoment(userID string, req *CreateMomentRequest) (*
 	}
 
 	moment := &models.Moment{
-		UserID:       userID,
-		AuthorID:     userID,
-		Content:      req.Content,
-		Tags:         models.Tags(req.Tags),
-		Visibility:   req.Visibility,
-		LikeCount:    0,
-		CommentCount: 0,
-		Status:       1, // 正常状态
-		CreatedAt:    time.Now(),
-		UpdatedAt:    time.Now(),
+		UserID:          userID,
+		AuthorID:        userID,
+		Content:         req.Content,
+		Tags:           models.Tags(req.Tags),
+		Images:          models.Tags{}, // 空JSON数组
+		CommentsSummary:  "[]", // 空JSON字符串
+		LikedUsers:      models.Tags{}, // 空JSON数组
+		Visibility:      req.Visibility,
+		LikeCount:       0,
+		CommentCount:    0,
+		Status:          1, // 正常状态
+		CreatedAt:       time.Now(),
+		UpdatedAt:       time.Now(),
 	}
 
 	if err := s.db.Create(moment).Error; err != nil {
