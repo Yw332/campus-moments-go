@@ -35,11 +35,13 @@ func SetupRoutes(router *gin.Engine) {
 	// 公开的动态列表（不需要登录也能看）
 	router.GET("/moments", handlers.GetMoments)
 	
-	// 公开的搜索功能（不需要登录）
-	router.GET("/search/hot-words", handlers.GetHotWords)
-
 	// 管理端登录
 	router.POST("/admin/login", handlers.AdminLogin)
+
+	// 搜索相关（公共接口，无需认证）
+	router.GET("/search", handlers.SearchContent)
+	router.GET("/search/hot-words", handlers.GetHotWords)  
+	router.GET("/search/suggestions", handlers.GetSearchSuggestions)
 
 	// 管理端路由（需要登录 + 管理员权限）
 	admin := router.Group("/admin")
@@ -94,15 +96,12 @@ func SetupRoutes(router *gin.Engine) {
 			users.PUT("/password", handlers.ChangePassword)
 		}
 
-		// 搜索相关
+		// 搜索历史（需要认证）
 		search := api.Group("/search")
 		{
-			search.GET("/hot-words", handlers.GetHotWords)
 			search.GET("/history", handlers.GetSearchHistory)
-			search.GET("/filter", handlers.GetFilteredContent)
 			search.POST("/history", handlers.SaveSearchHistory)
-			search.GET("/suggestions", handlers.GetSearchSuggestions) // 搜索建议
-			search.GET("", handlers.SearchContent)                    // GET /search?keyword=xxx
+			search.GET("/filter", handlers.GetFilteredContent)
 		}
 	}
 }

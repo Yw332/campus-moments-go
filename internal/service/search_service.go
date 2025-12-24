@@ -76,39 +76,43 @@ func (s *SearchService) SearchContent(keyword string, page, pageSize int, sortBy
 	var totalUsers int64
 
 	// 搜索动态
-	momentQuery := db.Table("moments").Where("content LIKE ?", "%"+keyword+"%")
-
-	// 根据排序方式设置排序
-	switch sortBy {
-	case "hottest":
-		// 最热：按点赞数和评论数综合排序
-		momentQuery = momentQuery.Order("(like_count + comment_count * 2) DESC, created_at DESC")
-	case "comprehensive":
-		// 综合：考虑时间、点赞、评论数
-		momentQuery = momentQuery.Order("(like_count * 3 + comment_count * 2 + TIMESTAMPDIFF(HOUR, created_at, NOW()) / 24) DESC")
-	case "latest", "":
-		// 最新：按时间排序（默认）
-		momentQuery = momentQuery.Order("created_at DESC")
-	default:
-		momentQuery = momentQuery.Order("created_at DESC")
+	if err := db.Model(&models.Moment{}).
+		Where("content LIKE ?", "%"+keyword+"%").
+		Count(&totalMoments).Error; err != nil {
+		return &SearchResponse{
+			Moments: []models.Moment{},
+			Users:   []models.User{},
+			Pagination: Pagination{
+				Page:     page,
+				PageSize: pageSize,
+				Total:    0,
+			},
+		}, nil
 	}
 
-	// 统计动态总数
-	momentQuery.Count(&totalMoments)
-
 	// 分页查询动态
-	if err := momentQuery.Offset(offset).Limit(pageSize).Find(&moments).Error; err != nil {
+	if err := db.Model(&models.Moment{}).
+		Where("content LIKE ?", "%"+keyword+"%").
+		Order("created_at DESC").
+		Offset(offset).
+		Limit(pageSize).
+		Find(&moments).Error; err != nil {
 		return nil, fmt.Errorf("搜索动态失败: %v", err)
 	}
 
 	// 搜索用户
-	userQuery := db.Table("users").Where("username LIKE ? OR phone LIKE ?", "%"+keyword+"%", "%"+keyword+"%")
-
-	// 统计用户总数
-	userQuery.Count(&totalUsers)
+	if err := db.Model(&models.User{}).
+		Where("username LIKE ? OR phone LIKE ?", "%"+keyword+"%", "%"+keyword+"%").
+		Count(&totalUsers).Error; err != nil {
+		return nil, fmt.Errorf("统计用户总数失败: %v", err)
+	}
 
 	// 分页查询用户
-	if err := userQuery.Offset(offset).Limit(pageSize).Find(&users).Error; err != nil {
+	if err := db.Model(&models.User{}).
+		Where("username LIKE ? OR phone LIKE ?", "%"+keyword+"%", "%"+keyword+"%").
+		Offset(offset).
+		Limit(pageSize).
+		Find(&users).Error; err != nil {
 		return nil, fmt.Errorf("搜索用户失败: %v", err)
 	}
 
