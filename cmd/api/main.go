@@ -4,7 +4,6 @@ import (
 	"log"
 	"os"
 
-	"github.com/Yw332/campus-moments-go/internal/models"
 	"github.com/Yw332/campus-moments-go/internal/routes"
 	"github.com/Yw332/campus-moments-go/pkg/config"
 	"github.com/Yw332/campus-moments-go/pkg/database"

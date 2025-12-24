@@ -1,44 +1,30 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
-	_ "github.com/go-sql-driver/mysql"
 	"log"
+
+	"github.com/Yw332/campus-moments-go/pkg/database"
 )
 
 func main() {
-	db, err := sql.Open("mysql", "workbench_user:ruangong7@tcp(106.52.165.122:3306)/campus_moments")
+	// 连接数据库
+	database.Init()
+	defer database.Close()
+
+	// 直接查询posts表
+	db := database.GetDB()
+	var results []struct {
+		ID    int
+		Title string
+	}
+	err := db.Raw("SELECT id, title FROM posts ORDER BY id DESC LIMIT 10").Scan(&results).Error
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer db.Close()
 
-	// 查看users表结构
-	rows, err := db.Query("DESCRIBE users")
-	if err != nil {
-		log.Printf("查询users表失败: %v", err)
-	} else {
-		fmt.Println("=== users表结构 ===")
-		for rows.Next() {
-			var field, typ, null, key, extra string
-			var def interface{}
-			rows.Scan(&field, &typ, &null, &key, &def, &extra)
-			fmt.Printf("%s: %s\n", field, typ)
-		}
-	}
-
-	// 查看posts表结构（如果存在）
-	rows2, err := db.Query("DESCRIBE posts")
-	if err != nil {
-		log.Printf("查询posts表失败: %v", err)
-	} else {
-		fmt.Println("\n=== posts表结构 ===")
-		for rows2.Next() {
-			var field, typ, null, key, extra string
-			var def interface{}
-			rows2.Scan(&field, &typ, &null, &key, &def, &extra)
-			fmt.Printf("%s: %s\n", field, typ)
-		}
+	fmt.Println("=== 直接查询posts表 ===")
+	for _, row := range results {
+		fmt.Printf("ID: %d, Title: %s\n", row.ID, row.Title)
 	}
 }

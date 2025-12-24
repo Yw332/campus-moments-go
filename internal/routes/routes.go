@@ -7,8 +7,17 @@ import (
 )
 
 func SetupRoutes(router *gin.Engine) {
-	// 添加CORS中间件到所有路由
+	// 添加CORS中间件到所有路由（在路由设置之前）
 	router.Use(middleware.CORSMiddleware())
+	
+	// 全局OPTIONS处理（解决CORS预检问题）
+	router.OPTIONS("/*path", func(c *gin.Context) {
+		c.Header("Access-Control-Allow-Origin", c.GetHeader("Origin"))
+		c.Header("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+		c.Header("Access-Control-Allow-Headers", "Origin, Content-Type, Authorization")
+		c.Header("Access-Control-Allow-Credentials", "true")
+		c.AbortWithStatus(204)
+	})
 	
 	// ========== 公共路由（无需认证）==========
 	router.GET("/", handlers.Home)
