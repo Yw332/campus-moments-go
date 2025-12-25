@@ -3,6 +3,7 @@ package models
 import (
 	"database/sql/driver"
 	"encoding/json"
+	"fmt"
 	"time"
 )
 
@@ -13,13 +14,13 @@ type Moment struct {
 	AuthorID         string     `json:"authorId" gorm:"column:author_id;type:char(10);index"`  // 保持兼容性
 	Title            string     `json:"title" gorm:"column:title;type:varchar(100)"`
 	Content          string     `json:"content" gorm:"column:content;type:text;not null"`
-	Images           Tags       `json:"images" gorm:"column:images;type:json"`
-	Video            string     `json:"video" gorm:"column:video;type:varchar(200)"`
+	Images           *Tags      `json:"images" gorm:"column:images;type:json"`
+	Video            *string    `json:"video" gorm:"column:video;type:varchar(200)"`
 	Visibility       int        `json:"visibility" gorm:"column:visibility;type:TINYINT;default:0"`  // 0公开/1好友/2私密
 	Status           int        `json:"status" gorm:"column:status;type:TINYINT;default:1"`         // 1正常/2删除
-	Tags             Tags       `json:"tags" gorm:"column:tags;type:json"`
-	LikedUsers       Tags       `json:"likedUsers" gorm:"column:liked_users;type:json"`
-	CommentsSummary  string     `json:"commentsSummary" gorm:"column:comments_summary;type:json"`
+	Tags             *Tags      `json:"tags" gorm:"column:tags;type:json"`
+	LikedUsers       *Tags      `json:"likedUsers" gorm:"column:liked_users;type:json"`
+	CommentsSummary  *string    `json:"commentsSummary" gorm:"column:comments_summary;type:json"`
 	LikeCount        int64      `json:"likeCount" gorm:"column:like_count;default:0"`
 	CommentCount     int64      `json:"commentCount" gorm:"column:comment_count;default:0"`
 	ViewCount        int64      `json:"viewCount" gorm:"column:view_count;default:0"`
@@ -27,14 +28,20 @@ type Moment struct {
 	UpdatedAt        time.Time  `json:"updatedAt" gorm:"column:updated_at"`
 
 	// 兼容字段
-	Media            Tags       `json:"media" gorm:"column:media;type:json"`  // 兼容旧的media字段
+	Media            *Tags      `json:"media" gorm:"column:media;type:json"`  // 兼容旧的media字段
 
 	// 关联字段
 	Author *User `json:"author,omitempty" gorm:"foreignKey:AuthorID;references:ID;constraint:false"`
 }
 
-// Tags 标签数组类型
-type Tags []string
+// Tags 标签数组类型 - 匹配数据库中的格式
+type Tags []Tag
+
+// Tag 标签结构
+type Tag struct {
+	ID   int    `json:"id"`
+	Name string `json:"name"`
+}
 
 // Value 实现 driver.Valuer 接口，用于数据库存储
 func (t Tags) Value() (driver.Value, error) {
@@ -51,12 +58,29 @@ func (t *Tags) Scan(value interface{}) error {
 		return nil
 	}
 
+	var jsonStr string
 	switch v := value.(type) {
 	case []byte:
-		return json.Unmarshal(v, t)
+		jsonStr = string(v)
 	case string:
-		return json.Unmarshal([]byte(v), t)
+		jsonStr = v
+	default:
+		return fmt.Errorf("无法将 %T 转换为Tags", value)
 	}
+
+	// 处理各种JSON格式
+	var tags Tags
+	if err := json.Unmarshal([]byte(jsonStr), &tags); err != nil {
+		// 尝试处理单个tag对象的情况
+		var singleTag Tag
+		if err := json.Unmarshal([]byte(jsonStr), &singleTag); err == nil {
+			*t = Tags{singleTag}
+			return nil
+		}
+		return fmt.Errorf("JSON解析失败: %v, 原始数据: %s", err, jsonStr)
+	}
+
+	*t = tags
 	return nil
 }
 

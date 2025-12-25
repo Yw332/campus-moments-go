@@ -1,12 +1,15 @@
 package service
 
 import (
+	"database/sql"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
 
 	"github.com/Yw332/campus-moments-go/internal/models"
 	"github.com/Yw332/campus-moments-go/pkg/database"
+	_ "github.com/go-sql-driver/mysql"
 	"gorm.io/gorm"
 )
 
@@ -47,12 +50,22 @@ func (s *MomentService) CreateMoment(userID string, req *CreateMomentRequest) (*
 		return nil, errors.New("数据库未连接")
 	}
 
+	// 从media中提取图片URL，存储到images字段
+	var images []string
+	for _, item := range req.Media {
+		if item.Type == "image" && item.URL != "" {
+			images = append(images, item.URL)
+		}
+	}
+	fmt.Printf("调试: CreateMoment - 提取的images: %v\n", images)
+
 	moment := &models.Moment{
 		UserID:          userID,
 		AuthorID:        userID,
+		Title:           req.Content, // 使用内容作为标题
 		Content:         req.Content,
 		Tags:           models.Tags(req.Tags),
-		Images:          models.Tags{}, // 空JSON数组
+		Images:          models.Tags(images), // 将media中的图片转换为images字段
 		CommentsSummary:  "[]", // 空JSON字符串
 		LikedUsers:      models.Tags{}, // 空JSON数组
 		Visibility:      req.Visibility,
@@ -75,25 +88,69 @@ func (s *MomentService) CreateMoment(userID string, req *CreateMomentRequest) (*
 	return moment, nil
 }
 
-// GetMomentByID 根据ID获取动态详情
+// GetMomentByID 根据ID获取动态详情 - 修复JSON字段问题
 func (s *MomentService) GetMomentByID(id int64) (*models.Moment, error) {
-	if s.db == nil {
-		s.db = database.GetDB()
-	}
-	if s.db == nil {
-		return nil, errors.New("数据库未连接")
+	// 使用GORM但排除有问题的字段
+	var result struct {
+		ID           int64     `gorm:"column:id"`
+		UserID       string    `gorm:"column:user_id"`
+		AuthorID     string    `gorm:"column:author_id"`
+		Title        string    `gorm:"column:title"`
+		Content      string    `gorm:"column:content"`
+		Images       string    `gorm:"column:images"`
+		Video        string    `gorm:"column:video"`
+		Visibility   int       `gorm:"column:visibility"`
+		Status       int       `gorm:"column:status"`
+		LikeCount    int64     `gorm:"column:like_count"`
+		CommentCount int64     `gorm:"column:comment_count"`
+		ViewCount    int64     `gorm:"column:view_count"`
+		CreatedAt    time.Time `gorm:"column:created_at"`
+		UpdatedAt    time.Time `gorm:"column:updated_at"`
 	}
 
-	var moment models.Moment
-	err := s.db.Preload("Author").Where("id = ? AND status = 1", id).First(&moment).Error
-	if err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
+	query := `SELECT id, user_id, author_id, title, content, images, video, 
+	              visibility, status, like_count, comment_count, view_count, created_at, updated_at
+	              FROM posts WHERE id = ? AND status = 1`
+
+	if err := database.GetDB().Raw(query, id).Scan(&result).Error; err != nil {
+		if err.Error() == "sql: no rows in result set" {
 			return nil, errors.New("动态不存在")
 		}
-		return nil, fmt.Errorf("查询动态失败: %w", err)
+		return nil, fmt.Errorf("查询动态失败: %v", err)
 	}
 
-	return &moment, nil
+	// 手动构建Moment对象
+	moment := &models.Moment{
+		ID:           result.ID,
+		UserID:       result.UserID,
+		AuthorID:     result.AuthorID,
+		Title:        result.Title,
+		Content:      result.Content,
+		Visibility:   result.Visibility,
+		Status:       result.Status,
+		LikeCount:    result.LikeCount,
+		CommentCount: result.CommentCount,
+		ViewCount:    result.ViewCount,
+		CreatedAt:    result.CreatedAt,
+		UpdatedAt:    result.UpdatedAt,
+	}
+
+	// 手动处理images字段
+	if result.Images != "" && result.Images != "null" {
+		json.Unmarshal([]byte(result.Images), &moment.Images)
+	}
+
+	// 处理video字段
+	if result.Video != "" && result.Video != "null" {
+		moment.Video = &result.Video
+	}
+
+	// 查询作者信息
+	var user models.User
+	database.GetDB().Where("user_id = ?", result.UserID).First(&user)
+	moment.Author = &user
+
+	return moment, nil
 }
 
 // ListMoments 获取动态列表（支持分页）

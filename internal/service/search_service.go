@@ -1,6 +1,7 @@
 package service
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 
@@ -75,45 +76,88 @@ func (s *SearchService) SearchContent(keyword string, page, pageSize int, sortBy
 	var users []models.User
 	var totalUsers int64
 
-	// 搜索动态
-	if err := db.Model(&models.Moment{}).
-		Where("content LIKE ?", "%"+keyword+"%").
-		Count(&totalMoments).Error; err != nil {
-		return &SearchResponse{
-			Moments: []models.Moment{},
-			Users:   []models.User{},
-			Pagination: Pagination{
-				Page:     page,
-				PageSize: pageSize,
-				Total:    0,
-			},
-		}, nil
+	// 搜索动态 - 简化版本，只返回基本字段
+	type SimpleMoment struct {
+		ID           int64  `json:"id"`
+		Title        string  `json:"title"`
+		Content      string  `json:"content"`
+		Images       string  `json:"images"`
+		AuthorID     string  `json:"authorId"`
+		LikeCount    int64   `json:"likeCount"`
+		CommentCount int64   `json:"commentCount"`
+		CreatedAt    string  `json:"createdAt"`
 	}
-
-	// 分页查询动态
-	if err := db.Model(&models.Moment{}).
-		Where("content LIKE ?", "%"+keyword+"%").
-		Order("created_at DESC").
-		Offset(offset).
-		Limit(pageSize).
-		Find(&moments).Error; err != nil {
+	
+	var simpleMoments []SimpleMoment
+	query := `
+		SELECT id, title, content, images, user_id, like_count, comment_count, created_at 
+		FROM posts 
+		WHERE status = 1 AND content LIKE ? 
+		ORDER BY created_at DESC 
+		LIMIT ? OFFSET ?
+	`
+	
+	if err := db.Raw(query, "%"+keyword+"%", pageSize, offset).Scan(&simpleMoments).Error; err != nil {
+		fmt.Printf("搜索动态SQL错误: %v, query: %s, params: %s, %d, %d\n", err, query, "%"+keyword+"%", pageSize, offset)
 		return nil, fmt.Errorf("搜索动态失败: %v", err)
+	}
+	
+	// 转换为models.Moment（简化版本）
+	for _, simple := range simpleMoments {
+		moment := models.Moment{
+			ID:           simple.ID,
+			Title:        simple.Title,
+			Content:      simple.Content,
+			UserID:       simple.AuthorID,
+			LikeCount:    simple.LikeCount,
+			CommentCount: simple.CommentCount,
+			Status:       1,
+			CreatedAt:    time.Now(), // 暂时使用当前时间
+		}
+		
+		// 简化images处理
+		if simple.Images != "" && simple.Images != "null" && simple.Images != "[]" {
+			if err := json.Unmarshal([]byte(simple.Images), &moment.Images); err != nil {
+				moment.Images = models.Tags{}
+			}
+		} else {
+			moment.Images = models.Tags{}
+		}
+		
+		moments = append(moments, moment)
+	}
+	
+	// 统计总数
+	countQuery := `
+		SELECT COUNT(*) 
+		FROM posts 
+		WHERE status = 1 AND content LIKE ?
+	`
+	if err := db.Raw(countQuery, "%"+keyword+"%").Scan(&totalMoments).Error; err != nil {
+		totalMoments = 0
 	}
 
 	// 搜索用户
-	if err := db.Model(&models.User{}).
-		Where("username LIKE ? OR phone LIKE ?", "%"+keyword+"%", "%"+keyword+"%").
-		Count(&totalUsers).Error; err != nil {
-		return nil, fmt.Errorf("统计用户总数失败: %v", err)
+	userQuery := `
+		SELECT user_id, username, phone, avatar, signature, status, created_at, updated_at
+		FROM users 
+		WHERE username LIKE ? OR phone LIKE ? 
+		ORDER BY created_at DESC 
+		LIMIT ? OFFSET ?
+	`
+	
+	if err := db.Raw(userQuery, "%"+keyword+"%", "%"+keyword+"%", pageSize, offset).Scan(&users).Error; err != nil {
+		users = []models.User{} // 失败时返回空列表
 	}
-
-	// 分页查询用户
-	if err := db.Model(&models.User{}).
-		Where("username LIKE ? OR phone LIKE ?", "%"+keyword+"%", "%"+keyword+"%").
-		Offset(offset).
-		Limit(pageSize).
-		Find(&users).Error; err != nil {
-		return nil, fmt.Errorf("搜索用户失败: %v", err)
+	
+	// 统计用户总数
+	userCountQuery := `
+		SELECT COUNT(*) 
+		FROM users 
+		WHERE username LIKE ? OR phone LIKE ?
+	`
+	if err := db.Raw(userCountQuery, "%"+keyword+"%", "%"+keyword+"%").Scan(&totalUsers).Error; err != nil {
+		totalUsers = 0
 	}
 
 	return &SearchResponse{
@@ -277,7 +321,7 @@ func (s *SearchService) GetFilteredContent(filter *FilterRequest) (*SearchRespon
 		}, nil
 	}
 
-	query := db.Table("moments").Where("1=1")
+	query := db.Table("posts").Where("status = 1")
 
 	// 按可见性筛选
 	if filter.Visibility != "" {
@@ -358,12 +402,16 @@ func (s *SearchService) GetSearchSuggestions(keyword string) ([]string, error) {
 	}
 
 	var suggestions []string
-	// 从用户名和内容中获取建议
-	if err := db.Table("users").
-		Where("username LIKE ?", "%"+keyword+"%").
-		Limit(5).
-		Pluck("username", &suggestions).Error; err != nil {
-		return nil, fmt.Errorf("获取搜索建议失败: %v", err)
+	// 从用户名中获取建议
+	if err := db.Raw("SELECT username FROM users WHERE username LIKE ? LIMIT 5", "%"+keyword+"%").
+		Scan(&suggestions).Error; err != nil {
+		// 如果出错，返回热词
+		return s.GetHotWords()
+	}
+
+	// 如果没有建议，返回热词
+	if len(suggestions) == 0 {
+		return s.GetHotWords()
 	}
 
 	return suggestions, nil

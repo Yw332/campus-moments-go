@@ -58,6 +58,14 @@ func main() {
 
 	// 7. 设置静态文件服务
 	router.Static("/static", "./uploads")
+	
+	// 8. 确保上传目录存在
+	if err := os.MkdirAll("./uploads/files", 0755); err != nil {
+		log.Printf("创建上传目录失败: %v", err)
+	}
+	if err := os.MkdirAll("./uploads/avatars", 0755); err != nil {
+		log.Printf("创建头像目录失败: %v", err)
+	}
 
 	// 8. 注册路由（使用内部路由注册，保证返回格式一致）
 	routes.SetupRoutes(router)

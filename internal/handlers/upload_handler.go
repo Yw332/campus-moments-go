@@ -90,7 +90,7 @@ func UploadFile(c *gin.Context) {
 	}
 
 	// 6. 返回访问URL
-	fileUrl := fmt.Sprintf("http://106.52.165.122:8080/static/files/%s", newFilename)
+	fileUrl := fmt.Sprintf("http://localhost:8080/static/files/%s", newFilename)
 
 	c.JSON(http.StatusOK, gin.H{
 		"code":    200,
@@ -175,7 +175,7 @@ func UploadAvatar(c *gin.Context) {
 	}
 
 	// 6. 返回真实的访问URL
-	avatarUrl := fmt.Sprintf("http://106.52.165.122:8080/static/avatars/%s", newFilename)
+	avatarUrl := fmt.Sprintf("http://localhost:8080/static/avatars/%s", newFilename)
 
 	c.JSON(http.StatusOK, gin.H{
 		"code":    200,
