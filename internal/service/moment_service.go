@@ -1,7 +1,6 @@
 package service
 
 import (
-	"database/sql"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -9,7 +8,6 @@ import (
 
 	"github.com/Yw332/campus-moments-go/internal/models"
 	"github.com/Yw332/campus-moments-go/pkg/database"
-	_ "github.com/go-sql-driver/mysql"
 	"gorm.io/gorm"
 )
 

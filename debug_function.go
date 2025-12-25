@@ -1,8 +1,9 @@
-package handlers
+package main
 
 import (
 	"database/sql"
 	"encoding/json"
+	"fmt"
 	"time"
 	_ "github.com/go-sql-driver/mysql"
 )
@@ -16,10 +17,9 @@ type SimpleMoment struct {
 	AuthorID     string    `json:"authorId"`
 	LikeCount    int64     `json:"likeCount"`
 	CommentCount int64     `json:"commentCount"`
-	CreatedAt    time.Time `json:"createdAt"`
+	CreatedAt    time.Time  `json:"createdAt"`
 }
 
-// getMomentsFromDB 从数据库获取动态列表
 func getMomentsFromDB(page, pageSize int) ([]SimpleMoment, int, error) {
 	if page < 1 {
 		page = 1
@@ -47,23 +47,26 @@ func getMomentsFromDB(page, pageSize int) ([]SimpleMoment, int, error) {
 		return nil, 0, err
 	}
 
-	// 查询数据 - 确保字段顺序正确
+	// 查询数据
 	rows, err := db.Query("SELECT id, title, content, images, user_id, like_count, comment_count, created_at FROM posts WHERE status = 1 ORDER BY created_at DESC LIMIT ? OFFSET ?", pageSize, offset)
 	if err != nil {
 		return nil, 0, err
 	}
 	defer rows.Close()
 
-	// 确保初始化切片
-	list := make([]SimpleMoment, 0)
-	
+	fmt.Printf("=== 调试 getMomentsFromDB ===\n")
+	fmt.Printf("查询: %s\n", "SELECT id, title, content, images, user_id, like_count, comment_count, created_at FROM posts WHERE status = 1 ORDER BY created_at DESC LIMIT ? OFFSET ?")
+	fmt.Printf("参数: pageSize=%d, offset=%d\n", pageSize, offset)
+
+	var list []SimpleMoment
 	for rows.Next() {
 		var m SimpleMoment
 		var imagesRaw sql.NullString
 		var createdAt string
 
-		// 修复Scan顺序，移除video字段
-		if err := rows.Scan(&m.ID, &m.Title, &m.Content, &imagesRaw, &m.AuthorID, &m.LikeCount, &m.CommentCount, &createdAt); err != nil {
+		err := rows.Scan(&m.ID, &m.Title, &m.Content, &imagesRaw, &m.AuthorID, &m.LikeCount, &m.CommentCount, &createdAt)
+		if err != nil {
+			fmt.Printf("Scan错误: %v\n", err)
 			continue
 		}
 
@@ -76,16 +79,40 @@ func getMomentsFromDB(page, pageSize int) ([]SimpleMoment, int, error) {
 		}
 
 		if createdAt != "" {
-			// 处理MySQL时间格式（带毫秒和时区）
-			if parsedTime, err := time.Parse("2006-01-02T15:04:05.999Z", createdAt); err == nil {
-				m.CreatedAt = parsedTime
-			} else {
-				m.CreatedAt = time.Now()
+			// 尝试多种时间格式
+			formats := []string{
+				"2006-01-02 15:04:05.000",
+				"2006-01-02 15:04:05",
+				"2006-01-02T15:04:05.999Z",
+			}
+			for _, format := range formats {
+				if parsedTime, err := time.Parse(format, createdAt); err == nil {
+					m.CreatedAt = parsedTime
+					fmt.Printf("时间解析成功: %s -> %v\n", createdAt, m.CreatedAt)
+					break
+				}
 			}
 		}
 
 		list = append(list, m)
+		fmt.Printf("添加一条记录: ID=%d, Title=%s, List长度=%d\n", m.ID, m.Title, len(list))
 	}
 
+	fmt.Printf("最终结果: total=%d, list长度=%d\n", total, len(list))
 	return list, total, nil
+}
+
+func main() {
+	list, total, err := getMomentsFromDB(1, 3)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Printf("=== 最终结果 ===\n")
+	fmt.Printf("总数: %d\n", total)
+	fmt.Printf("列表长度: %d\n", len(list))
+	
+	for i, item := range list {
+		fmt.Printf("第%d条: %+v\n", i+1, item)
+	}
 }

@@ -34,14 +34,8 @@ type Moment struct {
 	Author *User `json:"author,omitempty" gorm:"foreignKey:AuthorID;references:ID;constraint:false"`
 }
 
-// Tags 标签数组类型 - 匹配数据库中的格式
-type Tags []Tag
-
-// Tag 标签结构
-type Tag struct {
-	ID   int    `json:"id"`
-	Name string `json:"name"`
-}
+// Tags 标签数组类型 - 恢复为字符串数组
+type Tags []string
 
 // Value 实现 driver.Valuer 接口，用于数据库存储
 func (t Tags) Value() (driver.Value, error) {
@@ -58,29 +52,12 @@ func (t *Tags) Scan(value interface{}) error {
 		return nil
 	}
 
-	var jsonStr string
 	switch v := value.(type) {
 	case []byte:
-		jsonStr = string(v)
+		return json.Unmarshal(v, t)
 	case string:
-		jsonStr = v
-	default:
-		return fmt.Errorf("无法将 %T 转换为Tags", value)
+		return json.Unmarshal([]byte(v), t)
 	}
-
-	// 处理各种JSON格式
-	var tags Tags
-	if err := json.Unmarshal([]byte(jsonStr), &tags); err != nil {
-		// 尝试处理单个tag对象的情况
-		var singleTag Tag
-		if err := json.Unmarshal([]byte(jsonStr), &singleTag); err == nil {
-			*t = Tags{singleTag}
-			return nil
-		}
-		return fmt.Errorf("JSON解析失败: %v, 原始数据: %s", err, jsonStr)
-	}
-
-	*t = tags
 	return nil
 }
 

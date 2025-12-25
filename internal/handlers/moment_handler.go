@@ -80,6 +80,11 @@ func GetMoments(c *gin.Context) {
 		return
 	}
 
+	// 确保list不为nil
+	if list == nil {
+		list = []gin.H{}
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"code":    200,
 		"message": "success",
@@ -270,6 +275,11 @@ func GetUserMoments(c *gin.Context) {
 			},
 		})
 		return
+	}
+
+	// 确保list不为nil
+	if list == nil {
+		list = []gin.H{}
 	}
 
 	c.JSON(http.StatusOK, gin.H{
