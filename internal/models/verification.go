@@ -18,7 +18,7 @@ type VerificationCode struct {
 
 // SearchHistory 搜索历史模型
 type SearchHistory struct {
-	ID        int64     `json:"id" gorm:"primaryKey;autoIncrement"`
+	ID        int       `json:"id" gorm:"primaryKey;autoIncrement"`
 	UserID    string    `json:"userId" gorm:"type:char(10);not null;index"`
 	Keyword   string    `json:"keyword" gorm:"type:varchar(100);not null"`
 	CreatedAt time.Time `json:"createdAt"`

@@ -4,11 +4,13 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"io"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/Yw332/campus-moments-go/internal/models"
@@ -289,4 +291,25 @@ func BenchmarkUploadAvatar(b *testing.B) {
 			b.Fatalf("Expected status 200, got %d", w.Code)
 		}
 	}
+}
+
+// getAuthToken 辅助函数：注册并登录用户，返回token
+func getAuthToken(router *gin.Engine, username, password string) string {
+	// 登录请求
+	loginReq := map[string]string{
+		"account":  username,
+		"password": password,
+	}
+	body, _ := json.Marshal(loginReq)
+	req, _ := http.NewRequest("POST", "/auth/login", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+	
+	w := httptest.NewRecorder()
+	router.ServeHTTP(w, req)
+	
+	var response map[string]interface{}
+	json.Unmarshal(w.Body.Bytes(), &response)
+	
+	data := response["data"].(map[string]interface{})
+	return data["token"].(string)
 }

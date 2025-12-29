@@ -7,7 +7,6 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/Yw332/campus-moments-go/internal/handlers"
 	"github.com/Yw332/campus-moments-go/internal/models"
 	"github.com/Yw332/campus-moments-go/internal/routes"
 	"github.com/gin-gonic/gin"

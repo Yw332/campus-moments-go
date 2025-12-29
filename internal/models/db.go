@@ -14,35 +14,28 @@ func AutoMigrate() {
 		return
 	}
 
-	// 迁移动态表
-	if err := db.AutoMigrate(&Moment{}); err != nil {
-		log.Printf("❌ 动态表迁移失败: %v", err)
-	} else {
-		log.Println("✅ 动态表迁移成功")
+	// 迁移所有核心表
+	tables := []interface{}{
+		&User{},           // users表
+		&Moment{},         // posts表
+		&Comment{},        // comments表
+		&Like{},           // likes表
+		&Message{},        // messages表
+		&Conversation{},   // conversations表
+		&FriendRelation{}, // friend_relations表
+		&FriendRequest{},  // friend_requests表
+		&Tag{},            // tags表
+		&SearchHistory{},  // search_history表
+		&VerificationCode{}, // verification_codes表
+		&ResetPasswordLog{}, // reset_password_logs表
 	}
 
-	// 完全跳过用户表的迁移，使用现有表结构
-	log.Println("✅ 跳过用户表迁移，使用现有表结构")
-
-	// 迁移验证码相关表
-	if err := db.AutoMigrate(&VerificationCode{}); err != nil {
-		log.Printf("❌ 验证码表迁移失败: %v", err)
-	} else {
-		log.Println("✅ 验证码表迁移成功")
-	}
-
-	// 迁移搜索历史表
-	if err := db.AutoMigrate(&SearchHistory{}); err != nil {
-		log.Printf("❌ 搜索历史表迁移失败: %v", err)
-	} else {
-		log.Println("✅ 搜索历史表迁移成功")
-	}
-
-	// 迁移重置密码日志表
-	if err := db.AutoMigrate(&ResetPasswordLog{}); err != nil {
-		log.Printf("❌ 重置密码日志表迁移失败: %v", err)
-	} else {
-		log.Println("✅ 重置密码日志表迁移成功")
+	for _, table := range tables {
+		if err := db.AutoMigrate(table); err != nil {
+			log.Printf("❌ %T 表迁移失败: %v", table, err)
+		} else {
+			log.Printf("✅ %T 表迁移成功", table)
+		}
 	}
 }
 

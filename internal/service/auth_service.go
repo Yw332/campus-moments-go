@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"regexp"
+	"strconv"
 	"time"
 
 	"github.com/Yw332/campus-moments-go/internal/models"
@@ -157,7 +158,7 @@ func (s *AuthService) Register(req *RegisterRequest) (*models.User, error) {
 	}
 
 	user := &models.User{
-		ID:       newID,
+		ID:       idStr,
 		Username: req.Username,
 		Phone:    req.Phone,
 		Status:   1,
@@ -193,8 +194,9 @@ func (s *AuthService) Login(req *LoginRequest) (*LoginResponse, error) {
 		return nil, errors.New("密码错误")
 	}
 
-	// 生成JWT token
-	token, err := jwt.GenerateToken(user.ID, user.Username)
+	// 生成JWT token (将字符串ID转换为int64)
+	userIDInt, _ := strconv.ParseInt(user.ID, 10, 64)
+	token, err := jwt.GenerateToken(userIDInt, user.Username)
 	if err != nil {
 		return nil, fmt.Errorf("生成token失败: %v", err)
 	}

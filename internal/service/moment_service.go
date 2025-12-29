@@ -1,6 +1,7 @@
 package service
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 	"time"
@@ -44,15 +45,17 @@ func (s *MomentService) CreateMoment(userID string, req *CreateMomentRequest) (*
 		return nil, errors.New("数据库未连接")
 	}
 
+	// 转换Tags到JSON格式
+	tagsJSON, _ := json.Marshal(models.Tags(req.Tags))
+	
 	moment := &models.Moment{
+		UserID:     userID,
 		Content:    req.Content,
-		AuthorID:   userID,
-		Tags:       models.Tags(req.Tags),
-		Media:      models.MediaItems(req.Media),
+		Tags:       tagsJSON,
 		Visibility: req.Visibility,
 		LikeCount:  0,
 		CommentCount: 0,
-		Status:     1, // 正常状态
+		Status:     0, // 正常状态（根据数据库结构：0-正常 1-删除）
 		CreatedAt:  time.Now(),
 		UpdatedAt:  time.Now(),
 	}

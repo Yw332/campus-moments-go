@@ -15,7 +15,7 @@ func SearchContent(c *gin.Context) {
 	keyword := c.Query("keyword")
 	if keyword == "" {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"code":    400,
+			"code":    http.StatusBadRequest,
 			"message": "搜索关键词不能为空",
 			"data":    nil,
 		})
@@ -29,7 +29,7 @@ func SearchContent(c *gin.Context) {
 	results, err := searchService.SearchContent(keyword, page, pageSize)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"code":    500,
+			"code":    http.StatusInternalServerError,
 			"message": "搜索失败",
 			"data":    nil,
 		})
@@ -37,7 +37,7 @@ func SearchContent(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"code":    0,
+		"code":    http.StatusOK,
 		"message": "success",
 		"data":    results,
 	})
@@ -48,7 +48,7 @@ func GetHotWords(c *gin.Context) {
 	hotWords, err := searchService.GetHotWords()
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"code":    500,
+			"code":    http.StatusInternalServerError,
 			"message": "获取热词失败",
 			"data":    nil,
 		})
@@ -56,7 +56,7 @@ func GetHotWords(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"code":    0,
+		"code":    http.StatusOK,
 		"message": "success",
 		"data":    hotWords,
 	})
@@ -67,7 +67,7 @@ func GetSearchHistory(c *gin.Context) {
 	userID, exists := c.Get("userID")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{
-			"code":    401,
+			"code":    http.StatusUnauthorized,
 			"message": "未认证",
 			"data":    nil,
 		})
@@ -78,7 +78,7 @@ func GetSearchHistory(c *gin.Context) {
 	history, err := searchService.GetSearchHistory(uid)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"code":    500,
+			"code":    http.StatusInternalServerError,
 			"message": "获取搜索历史失败",
 			"data":    nil,
 		})
@@ -86,7 +86,7 @@ func GetSearchHistory(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"code":    0,
+		"code":    http.StatusOK,
 		"message": "success",
 		"data":    history,
 	})
@@ -97,7 +97,7 @@ func SaveSearchHistory(c *gin.Context) {
 	userID, exists := c.Get("userID")
 	if !exists {
 		c.JSON(http.StatusUnauthorized, gin.H{
-			"code":    401,
+			"code":    http.StatusUnauthorized,
 			"message": "未认证",
 			"data":    nil,
 		})
@@ -109,7 +109,7 @@ func SaveSearchHistory(c *gin.Context) {
 	}
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
-			"code":    400,
+			"code":    http.StatusBadRequest,
 			"message": "参数错误",
 			"data":    nil,
 		})
@@ -120,7 +120,7 @@ func SaveSearchHistory(c *gin.Context) {
 	err := searchService.SaveSearchHistory(uid, req.Keyword)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"code":    500,
+			"code":    http.StatusInternalServerError,
 			"message": "保存搜索历史失败",
 			"data":    nil,
 		})
@@ -128,7 +128,7 @@ func SaveSearchHistory(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"code":    0,
+		"code":    http.StatusOK,
 		"message": "保存成功",
 		"data":    nil,
 	})
@@ -157,7 +157,7 @@ func GetFilteredContent(c *gin.Context) {
 	results, err := searchService.GetFilteredContent(&filter)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"code":    500,
+			"code":    http.StatusInternalServerError,
 			"message": "获取筛选内容失败",
 			"data":    nil,
 		})
@@ -165,7 +165,7 @@ func GetFilteredContent(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"code":    0,
+		"code":    http.StatusOK,
 		"message": "success",
 		"data":    results,
 	})
@@ -178,7 +178,7 @@ func GetSearchSuggestions(c *gin.Context) {
 	suggestions, err := searchService.GetSearchSuggestions(keyword)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"code":    500,
+			"code":    http.StatusInternalServerError,
 			"message": "获取搜索建议失败",
 			"data":    nil,
 		})
@@ -186,7 +186,7 @@ func GetSearchSuggestions(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"code":    0,
+		"code":    http.StatusOK,
 		"message": "success",
 		"data":    suggestions,
 	})

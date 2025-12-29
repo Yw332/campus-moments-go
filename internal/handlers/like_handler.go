@@ -1,0 +1,126 @@
+package handlers
+
+import (
+	"github.com/Yw332/campus-moments-go/internal/service"
+	"github.com/gin-gonic/gin"
+	"net/http"
+	"strconv"
+)
+
+// LikePost 点赞/取消点赞帖子
+func LikePost(c *gin.Context) {
+	postID, err := strconv.ParseInt(c.Param("postId"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的帖子ID"})
+		return
+	}
+	
+	userID := c.GetString("userID")
+	liked, err := service.ToggleLikePost(postID, userID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "操作失败: " + err.Error()})
+		return
+	}
+	
+	var msg string
+	if liked {
+		msg = "点赞成功"
+	} else {
+		msg = "取消点赞成功"
+	}
+	
+	c.JSON(http.StatusOK, gin.H{
+		"code": http.StatusOK,
+		"message":  msg,
+		"data": gin.H{
+			"liked": liked,
+		},
+	})
+}
+
+// GetPostLikes 获取帖子点赞列表
+func GetPostLikes(c *gin.Context) {
+	postID, err := strconv.ParseInt(c.Param("postId"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的帖子ID"})
+		return
+	}
+	
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "20"))
+	
+	likes, total, err := service.GetPostLikes(postID, page, pageSize)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "获取失败: " + err.Error()})
+		return
+	}
+	
+	c.JSON(http.StatusOK, gin.H{
+		"code": http.StatusOK,
+		"message":  "获取成功",
+		"data": gin.H{
+			"likes": likes,
+			"total": total,
+			"page":  page,
+			"pageSize": pageSize,
+		},
+	})
+}
+
+// GetCommentLikes 获取评论点赞列表
+func GetCommentLikes(c *gin.Context) {
+	commentID, err := strconv.ParseInt(c.Param("commentId"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的评论ID"})
+		return
+	}
+	
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "20"))
+	
+	likes, total, err := service.GetCommentLikes(commentID, page, pageSize)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "获取失败: " + err.Error()})
+		return
+	}
+	
+	c.JSON(http.StatusOK, gin.H{
+		"code": http.StatusOK,
+		"message":  "获取成功",
+		"data": gin.H{
+			"likes": likes,
+			"total": total,
+			"page":  page,
+			"pageSize": pageSize,
+		},
+	})
+}
+
+// GetUserLikes 获取用户点赞列表
+func GetUserLikes(c *gin.Context) {
+	targetUserID := c.Param("userId")
+	if targetUserID == "" {
+		targetUserID = c.GetString("userID")
+	}
+	
+	targetType := c.DefaultQuery("type", "1") // 默认获取帖子点赞
+	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
+	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "20"))
+	
+	likes, total, err := service.GetUserLikes(targetUserID, targetType, page, pageSize)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": "获取失败: " + err.Error()})
+		return
+	}
+	
+	c.JSON(http.StatusOK, gin.H{
+		"code": http.StatusOK,
+		"message":  "获取成功",
+		"data": gin.H{
+			"likes": likes,
+			"total": total,
+			"page":  page,
+			"pageSize": pageSize,
+		},
+	})
+}
