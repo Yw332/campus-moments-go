@@ -123,10 +123,35 @@ func GetMomentDetail(c *gin.Context) {
 		return
 	}
 
+	// 添加 author 字段（兼容）
+	data := make(map[string]interface{})
+	if moment != nil {
+		data["id"] = moment.ID
+		data["userId"] = moment.UserID
+		data["authorId"] = moment.UserID
+		data["title"] = moment.Title
+		data["content"] = moment.Content
+		data["images"] = moment.Images
+		data["video"] = moment.Video
+		data["visibility"] = moment.Visibility
+		data["status"] = moment.Status
+		data["tags"] = moment.Tags
+		data["likedUsers"] = moment.LikedUsers
+		data["commentsSummary"] = moment.CommentsSummary
+		data["likeCount"] = moment.LikeCount
+		data["commentCount"] = moment.CommentCount
+		data["viewCount"] = moment.ViewCount
+		data["createdAt"] = moment.CreatedAt
+		data["updatedAt"] = moment.UpdatedAt
+		data["media"] = moment.Media
+		data["author"] = moment.User
+		data["user"] = moment.User
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"code":    200,
 		"message": "success",
-		"data":    moment,
+		"data":    data,
 	})
 }
 
@@ -215,11 +240,48 @@ func DeleteMoment(c *gin.Context) {
 	if err := momentService.DeleteMoment(uid, momentID); err != nil {
 		statusCode := http.StatusInternalServerError
 		message := err.Error()
-		
+
 		if err.Error() == "动态不存在或无权限删除" {
 			statusCode = http.StatusNotFound
 		}
-		
+
+		c.JSON(statusCode, gin.H{
+			"code":    statusCode,
+			"message": message,
+			"data":    nil,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"code":    200,
+		"message": "删除成功",
+		"data": gin.H{
+			"postId": momentID,
+		},
+	})
+}
+
+// AdminDeleteMoment 管理员删除动态（可删除任意用户的动态）
+func AdminDeleteMoment(c *gin.Context) {
+	momentID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    400,
+			"message": "无效的动态ID",
+			"data":    nil,
+		})
+		return
+	}
+
+	if err := momentService.AdminDeleteMoment(momentID); err != nil {
+		statusCode := http.StatusInternalServerError
+		message := err.Error()
+
+		if err.Error() == "动态不存在" {
+			statusCode = http.StatusNotFound
+		}
+
 		c.JSON(statusCode, gin.H{
 			"code":    statusCode,
 			"message": message,

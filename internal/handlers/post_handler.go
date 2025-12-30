@@ -63,11 +63,42 @@ func GetPostList(c *gin.Context) {
 		return
 	}
 
+	// 转换为响应格式（id -> postId, user -> author）
+	convertedPosts := make([]map[string]interface{}, 0, len(posts))
+	for _, post := range posts {
+		postData := map[string]interface{}{
+			"postId":    post.ID,
+			"title":     post.Title,
+			"content":   post.Content,
+			"images":    post.Images,
+			"video":     post.Video,
+			"tags":      post.Tags,
+			"createdAt": post.CreatedAt,
+		}
+
+		// 添加作者信息
+		if post.User != nil {
+			postData["author"] = map[string]interface{}{
+				"userId":   post.User.ID,
+				"username": post.User.Username,
+				"avatar":   post.User.Avatar,
+			}
+		}
+
+		// 添加统计信息
+		postData["likeCount"] = post.LikeCount
+		postData["commentCount"] = post.CommentCount
+		postData["viewCount"] = post.ViewCount
+		postData["visibility"] = post.Visibility
+
+		convertedPosts = append(convertedPosts, postData)
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"code":    200,
 		"message": "获取成功",
 		"data": gin.H{
-			"posts":    posts,
+			"posts":    convertedPosts,
 			"total":    total,
 			"page":     page,
 			"pageSize": pageSize,
@@ -101,10 +132,36 @@ func GetPostDetail(c *gin.Context) {
 	// 增加浏览量
 	service.IncrementViewCount(postID)
 
+	// 转换为响应格式
+	postData := map[string]interface{}{
+		"postId":    post.ID,
+		"title":     post.Title,
+		"content":   post.Content,
+		"images":    post.Images,
+		"video":     post.Video,
+		"tags":      post.Tags,
+		"createdAt": post.CreatedAt,
+	}
+
+	// 添加作者信息
+	if post.User != nil {
+		postData["author"] = map[string]interface{}{
+			"userId":   post.User.ID,
+			"username": post.User.Username,
+			"avatar":   post.User.Avatar,
+		}
+	}
+
+	// 添加统计信息
+	postData["likeCount"] = post.LikeCount
+	postData["commentCount"] = post.CommentCount
+	postData["viewCount"] = post.ViewCount
+	postData["visibility"] = post.Visibility
+
 	c.JSON(http.StatusOK, gin.H{
 		"code":    200,
 		"message": "获取成功",
-		"data":    post,
+		"data":    postData,
 	})
 }
 
@@ -207,11 +264,42 @@ func GetUserPosts(c *gin.Context) {
 		return
 	}
 
+	// 转换为响应格式
+	convertedPosts := make([]map[string]interface{}, 0, len(posts))
+	for _, post := range posts {
+		postData := map[string]interface{}{
+			"postId":    post.ID,
+			"title":     post.Title,
+			"content":   post.Content,
+			"images":    post.Images,
+			"video":     post.Video,
+			"tags":      post.Tags,
+			"createdAt": post.CreatedAt,
+		}
+
+		// 添加作者信息
+		if post.User != nil {
+			postData["author"] = map[string]interface{}{
+				"userId":   post.User.ID,
+				"username": post.User.Username,
+				"avatar":   post.User.Avatar,
+			}
+		}
+
+		// 添加统计信息
+		postData["likeCount"] = post.LikeCount
+		postData["commentCount"] = post.CommentCount
+		postData["viewCount"] = post.ViewCount
+		postData["visibility"] = post.Visibility
+
+		convertedPosts = append(convertedPosts, postData)
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"code":    200,
 		"message": "获取成功",
 		"data": gin.H{
-			"posts":    posts,
+			"posts":    convertedPosts,
 			"total":    total,
 			"page":     page,
 			"pageSize": pageSize,

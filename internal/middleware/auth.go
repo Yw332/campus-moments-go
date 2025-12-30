@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"strings"
 
+	"github.com/Yw332/campus-moments-go/pkg/database"
 	"github.com/Yw332/campus-moments-go/pkg/jwt"
 	"github.com/Yw332/campus-moments-go/pkg/token_blacklist"
 	"github.com/gin-gonic/gin"
@@ -93,6 +94,71 @@ func OptionalAuthMiddleware() gin.HandlerFunc {
 				c.Set("claims", claims)
 			}
 		}
+		c.Next()
+	}
+}
+
+// AdminMiddleware 管理员认证中间件
+func AdminMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// 获取当前用户信息
+		claims, exists := c.Get("claims")
+		if !exists {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"code":    401,
+				"message": "未认证",
+				"data":    nil,
+			})
+			c.Abort()
+			return
+		}
+
+		// 检查是否为管理员（负数ID表示来自 admins 表）
+		jwtClaims, ok := claims.(*jwt.Claims)
+		if !ok {
+			c.JSON(http.StatusUnauthorized, gin.H{
+				"code":    401,
+				"message": "无效的凭证",
+				"data":    nil,
+			})
+			c.Abort()
+			return
+		}
+
+		if jwtClaims.UserID < 0 {
+			// 管理员表登录，直接放行
+			c.Next()
+			return
+		}
+
+		// 普通用户，检查 users 表的 role 字段
+		db := database.GetDB()
+		userID := fmt.Sprintf("%010d", jwtClaims.UserID)
+
+		var user struct {
+			Role int `json:"role"`
+		}
+		if err := db.Table("users").Select("role").Where("id = ?", userID).First(&user).Error; err != nil {
+			c.JSON(http.StatusForbidden, gin.H{
+				"code":    403,
+				"message": "需要管理员权限",
+				"data":    nil,
+			})
+			c.Abort()
+			return
+		}
+
+		// 检查是否为管理员
+		if user.Role != 1 {
+			c.JSON(http.StatusForbidden, gin.H{
+				"code":    403,
+				"message": "需要管理员权限",
+				"data":    nil,
+			})
+			c.Abort()
+			return
+		}
+
 		c.Next()
 	}
 }

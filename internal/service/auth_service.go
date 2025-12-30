@@ -15,7 +15,9 @@ import (
 	"gorm.io/gorm"
 )
 
-type AuthService struct{}
+type AuthService struct {
+	isAdmin bool
+}
 
 // NewAuthService 创建认证服务实例
 func NewAuthService() *AuthService {
@@ -171,7 +173,48 @@ func (s *AuthService) Register(req *RegisterRequest) (*models.User, error) {
 func (s *AuthService) Login(req *LoginRequest) (*LoginResponse, error) {
 	db := database.GetDB()
 
-	// 查找用户（支持用户名或手机号登录）
+	// 首先尝试从 admins 表查找（管理员登录）
+	var admin models.Admin
+	adminErr := db.Where("username = ?", req.Account).First(&admin).Error
+
+	if adminErr == nil {
+		// 找到管理员账号，验证密码
+		if err := bcrypt.CompareHashAndPassword([]byte(admin.Password), []byte(req.Password)); err != nil {
+			log.Printf("管理员密码验证失败: %s", req.Account)
+			return nil, errors.New("密码错误")
+		}
+
+		// 更新最后登录时间
+		now := time.Now()
+		db.Model(&admin).Updates(map[string]interface{}{
+			"last_login_at": &now,
+		})
+
+		// 生成管理员JWT token (使用负数ID区分管理员和普通用户)
+		// 管理员ID: -1, -2, -3...
+		adminID := int64(-admin.ID)
+		token, err := jwt.GenerateToken(adminID, admin.Username)
+		if err != nil {
+			return nil, fmt.Errorf("生成token失败: %v", err)
+		}
+
+		// 返回管理员信息
+		userInfo := map[string]interface{}{
+			"userId":       admin.ID,
+			"username":     admin.Username,
+			"role":         admin.Role,
+			"isAdmin":      true,
+			"adminId":      admin.ID,
+		}
+
+		return &LoginResponse{
+			Token:    token,
+			UserInfo: userInfo,
+		}, nil
+	}
+
+	// 如果不是管理员，尝试从 users 表查找（普通用户登录）
+	log.Printf("用户登录尝试: %s, 管理员查询错误: %v", req.Account, adminErr)
 	var user models.User
 	err := db.Where("username = ? OR phone = ?", req.Account, req.Account).First(&user).Error
 	if err != nil {
@@ -206,6 +249,8 @@ func (s *AuthService) Login(req *LoginRequest) (*LoginResponse, error) {
 		"userId":   user.ID,
 		"username": user.Username,
 		"phone":    user.Phone,
+		"role":     user.Role,
+		"isAdmin":  user.Role == 1,
 	}
 
 	return &LoginResponse{

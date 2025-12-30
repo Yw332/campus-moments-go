@@ -28,10 +28,9 @@ type Moment struct {
 	
 	// 关联字段
 	User            *User           `json:"user,omitempty" gorm:"foreignKey:UserID"`
-	
+
 	// 兼容字段（保持向后兼容）
 	AuthorID        string          `json:"authorId,omitempty" gorm:"-"`
-	Author          *User           `json:"author,omitempty" gorm:"-"`
 	Media           MediaItems      `json:"media,omitempty" gorm:"-"`
 }
 
@@ -115,7 +114,7 @@ func (m *Moment) BeforeFind(tx *gorm.DB) (err error) {
 func (m *Moment) AfterFind(tx *gorm.DB) (err error) {
 	// 转换图片和视频到Media格式
 	var media MediaItems
-	
+
 	// 处理图片
 	if m.Images != nil && len(m.Images) > 0 {
 		var images []string
@@ -132,7 +131,7 @@ func (m *Moment) AfterFind(tx *gorm.DB) (err error) {
 			}
 		}
 	}
-	
+
 	// 处理视频
 	if m.Video != "" {
 		media = append(media, MediaItem{
@@ -144,12 +143,11 @@ func (m *Moment) AfterFind(tx *gorm.DB) (err error) {
 			Duration: 0,
 		})
 	}
-	
+
 	m.Media = media
-	
+
 	// 设置兼容字段
 	m.AuthorID = m.UserID
-	m.Author = m.User
-	
+
 	return nil
 }

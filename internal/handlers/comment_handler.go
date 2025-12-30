@@ -195,3 +195,34 @@ func ReplyComment(c *gin.Context) {
 		"data": comment,
 	})
 }
+
+// AdminDeleteComment 管理员删除评论
+func AdminDeleteComment(c *gin.Context) {
+	commentID, err := strconv.ParseInt(c.Param("id"), 10, 64)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    http.StatusBadRequest,
+			"message": "无效的评论ID",
+			"data":    nil,
+		})
+		return
+	}
+
+	comment, err := service.AdminDeleteComment(commentID)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"code":    http.StatusInternalServerError,
+			"message": "删除失败: " + err.Error(),
+			"data":    nil,
+		})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{
+		"code":    http.StatusOK,
+		"message": "删除成功",
+		"data": gin.H{
+			"commentId": comment.ID,
+		},
+	})
+}

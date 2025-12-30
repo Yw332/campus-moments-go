@@ -36,10 +36,43 @@ func SearchContent(c *gin.Context) {
 		return
 	}
 
+	// 转换 posts 为响应格式（id -> postId, user -> author）
+	convertedPosts := make([]map[string]interface{}, 0, len(results.Posts))
+	for _, post := range results.Posts {
+		postData := map[string]interface{}{
+			"postId":    post.ID,
+			"title":     post.Title,
+			"content":   post.Content,
+			"images":    post.Images,
+			"video":     post.Video,
+			"tags":      post.Tags,
+			"createdAt": post.CreatedAt,
+			"likeCount": post.LikeCount,
+			"commentCount": post.CommentCount,
+			"viewCount": post.ViewCount,
+			"visibility": post.Visibility,
+		}
+
+		// 添加作者信息
+		if post.User != nil {
+			postData["author"] = map[string]interface{}{
+				"userId":   post.User.ID,
+				"username": post.User.Username,
+				"avatar":   post.User.Avatar,
+			}
+		}
+
+		convertedPosts = append(convertedPosts, postData)
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"code":    http.StatusOK,
 		"message": "success",
-		"data":    results,
+		"data": map[string]interface{}{
+			"posts":      convertedPosts,
+			"users":      results.Users,
+			"pagination": results.Pagination,
+		},
 	})
 }
 
@@ -138,7 +171,7 @@ func SaveSearchHistory(c *gin.Context) {
 func GetFilteredContent(c *gin.Context) {
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "10"))
-	
+
 	// 获取筛选参数
 	visibility := c.Query("visibility")
 	tags := c.QueryArray("tags")
@@ -164,10 +197,43 @@ func GetFilteredContent(c *gin.Context) {
 		return
 	}
 
+	// 转换 posts 为响应格式（id -> postId, user -> author）
+	convertedPosts := make([]map[string]interface{}, 0, len(results.Posts))
+	for _, post := range results.Posts {
+		postData := map[string]interface{}{
+			"postId":    post.ID,
+			"title":     post.Title,
+			"content":   post.Content,
+			"images":    post.Images,
+			"video":     post.Video,
+			"tags":      post.Tags,
+			"createdAt": post.CreatedAt,
+			"likeCount": post.LikeCount,
+			"commentCount": post.CommentCount,
+			"viewCount": post.ViewCount,
+			"visibility": post.Visibility,
+		}
+
+		// 添加作者信息
+		if post.User != nil {
+			postData["author"] = map[string]interface{}{
+				"userId":   post.User.ID,
+				"username": post.User.Username,
+				"avatar":   post.User.Avatar,
+			}
+		}
+
+		convertedPosts = append(convertedPosts, postData)
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"code":    http.StatusOK,
 		"message": "success",
-		"data":    results,
+		"data": map[string]interface{}{
+			"posts":      convertedPosts,
+			"users":      results.Users,
+			"pagination": results.Pagination,
+		},
 	})
 }
 

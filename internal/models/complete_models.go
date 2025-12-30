@@ -9,7 +9,7 @@ import (
 // Comment 评论模型
 type Comment struct {
 	ID            int           `json:"id" gorm:"primaryKey;autoIncrement"`
-	PostID        int           `json:"postId" gorm:"column:post_id;type:int;not null;index"`
+	PostID        int64         `json:"postId" gorm:"column:post_id;type:bigint;not null;index"`
 	UserID        string        `json:"userId" gorm:"column:user_id;type:char(10);not null;index"`
 	Content       string        `json:"content" gorm:"column:content;type:varchar(1000);not null"`
 	Replies       json.RawMessage `json:"replies" gorm:"column:replies;type:json"`
@@ -18,10 +18,10 @@ type Comment struct {
 	Status        int           `json:"status" gorm:"column:status;type:tinyint;default:0"`
 	CreatedAt     time.Time     `json:"createdAt" gorm:"column:created_at;type:datetime"`
 	UpdatedAt     time.Time     `json:"updatedAt" gorm:"column:updated_at;type:datetime"`
-	
+
 	// 关联字段
 	User          *User         `json:"user,omitempty" gorm:"foreignKey:UserID"`
-	Post          *Moment       `json:"post,omitempty" gorm:"foreignKey:PostID"`
+	Post          *Post         `json:"post,omitempty" gorm:"foreignKey:PostID;references:ID"`
 }
 
 // 表名
@@ -34,9 +34,9 @@ type Like struct {
 	ID         int       `json:"id" gorm:"primaryKey;autoIncrement"`
 	UserID     string    `json:"userId" gorm:"column:user_id;type:char(10);not null;index"`
 	TargetType int       `json:"targetType" gorm:"column:target_type;type:tinyint;not null;comment:1-帖子 2-评论"`
-	TargetID   int       `json:"targetId" gorm:"column:target_id;type:int;not null;index"`
+	TargetID   int64     `json:"targetId" gorm:"column:target_id;type:bigint;not null;index"`
 	CreatedAt  time.Time `json:"createdAt" gorm:"column:created_at;type:datetime"`
-	
+
 	// 关联字段
 	User       *User     `json:"user,omitempty" gorm:"foreignKey:UserID"`
 }
@@ -158,7 +158,7 @@ func (Tag) TableName() string {
 
 // Post 帖子模型（完整版本，与现有Moment合并）
 type Post struct {
-	ID              int             `json:"id" gorm:"primaryKey;autoIncrement"`
+	ID              int64           `json:"id" gorm:"primaryKey;autoIncrement"`
 	UserID          string          `json:"userId" gorm:"column:user_id;type:char(10);not null;index"`
 	Title           string          `json:"title" gorm:"column:title;type:varchar(100)"`
 	Content         string          `json:"content" gorm:"column:content;type:text;not null"`

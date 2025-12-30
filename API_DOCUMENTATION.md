@@ -665,6 +665,7 @@ Authorization: Bearer <your_token>
 | PUT | `/api/admin/users/:userId/unban` | 解封用户 | ✅ 管理员 |
 | DELETE | `/api/admin/users/:userId` | 删除用户 | ✅ 管理员 |
 | DELETE | `/api/admin/posts/:id` | 删除用户动态 | ✅ 管理员 |
+| DELETE | `/api/admin/comments/:id` | 删除评论 | ✅ 管理员 |
 
 #### 8.1 获取所有用户列表
 
@@ -814,6 +815,22 @@ Authorization: Bearer <your_token>
   "message": "删除成功",
   "data": {
     "postId": 46
+  }
+}
+```
+
+#### 8.9 删除评论
+
+**路径参数**：
+- `id`: 评论ID
+
+**成功响应**：
+```json
+{
+  "code": 200,
+  "message": "删除成功",
+  "data": {
+    "commentId": 1
   }
 }
 ```

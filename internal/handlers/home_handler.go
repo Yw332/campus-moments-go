@@ -22,11 +22,40 @@ func GetHomePage(c *gin.Context) {
 		return
 	}
 
+	// 转换为响应格式（id -> postId, user -> author）
+	convertedPosts := make([]map[string]interface{}, 0, len(posts))
+	for _, post := range posts {
+		postData := map[string]interface{}{
+			"postId":    post.ID,
+			"title":     post.Title,
+			"content":   post.Content,
+			"images":    post.Images,
+			"video":     post.Video,
+			"tags":      post.Tags,
+			"createdAt": post.CreatedAt,
+			"likeCount": post.LikeCount,
+			"commentCount": post.CommentCount,
+			"viewCount": post.ViewCount,
+			"visibility": post.Visibility,
+		}
+
+		// 添加作者信息
+		if post.User != nil {
+			postData["author"] = map[string]interface{}{
+				"userId":   post.User.ID,
+				"username": post.User.Username,
+				"avatar":   post.User.Avatar,
+			}
+		}
+
+		convertedPosts = append(convertedPosts, postData)
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"code": http.StatusOK,
 		"message":  "获取成功",
 		"data": gin.H{
-			"posts": posts,
+			"posts": convertedPosts,
 			"total": total,
 			"page":  page,
 			"pageSize": pageSize,
@@ -50,11 +79,36 @@ func GetPostListEnhanced(c *gin.Context) {
 		return
 	}
 
+	// 转换为响应格式（id -> postId, username/avatar -> author）
+	convertedPosts := make([]map[string]interface{}, 0, len(posts))
+	for _, post := range posts {
+		postData := map[string]interface{}{
+			"postId":       post.ID,
+			"title":        post.Title,
+			"content":      post.Content,
+			"images":       post.Images,
+			"video":        post.Video,
+			"createdAt":    post.CreatedAt,
+			"likeCount":    post.LikeCount,
+			"commentCount": post.CommentCount,
+			"viewCount":    post.ViewCount,
+		}
+
+		// 添加作者信息
+		postData["author"] = map[string]interface{}{
+			"userId":   post.AuthorID,
+			"username": post.Username,
+			"avatar":   post.Avatar,
+		}
+
+		convertedPosts = append(convertedPosts, postData)
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"code": http.StatusOK,
 		"message":  "获取成功",
 		"data": gin.H{
-			"posts": posts,
+			"posts": convertedPosts,
 			"total": total,
 			"page":  page,
 			"pageSize": pageSize,

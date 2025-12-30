@@ -2,6 +2,7 @@ package service
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/Yw332/campus-moments-go/internal/models"
@@ -280,4 +281,112 @@ func (s *UserService) IncrementCommentCount(userID string) error {
 func (s *UserService) DecrementCommentCount(userID string) error {
 	db := database.GetDB()
 	return db.Model(&models.User{}).Where("id = ?", userID).Where("comment_count > 0").UpdateColumn("comment_count", gorm.Expr("comment_count - 1")).Error
+}
+
+// ResetUserPassword 管理员重置用户密码
+func (s *UserService) ResetUserPassword(targetUserID, newPassword string) error {
+	db := database.GetDB()
+	var user models.User
+
+	if err := db.Where("id = ?", targetUserID).First(&user).Error; err != nil {
+		return errors.New("用户不存在")
+	}
+
+	// 加密新密码
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return fmt.Errorf("密码加密失败: %w", err)
+	}
+
+	// 更新密码
+	if err := db.Model(&user).Updates(map[string]interface{}{
+		"password":   string(hashedPassword),
+		"updated_at": time.Now(),
+	}).Error; err != nil {
+		return fmt.Errorf("更新密码失败: %w", err)
+	}
+
+	return nil
+}
+
+// AdminGetAllUsers 管理员获取所有用户列表
+func (s *UserService) AdminGetAllUsers(page, pageSize int, keyword string) ([]models.User, int64, error) {
+	db := database.GetDB()
+
+	var total int64
+	query := db.Model(&models.User{})
+
+	// 关键词搜索
+	if keyword != "" {
+		query = query.Where("username LIKE ? OR phone LIKE ?", "%"+keyword+"%", "%"+keyword+"%")
+	}
+
+	if err := query.Count(&total).Error; err != nil {
+		return nil, 0, err
+	}
+
+	var users []models.User
+	offset := (page - 1) * pageSize
+	if err := query.Offset(offset).Limit(pageSize).Order("created_at DESC").Find(&users).Error; err != nil {
+		return nil, 0, err
+	}
+
+	return users, total, nil
+}
+
+// AdminBanUser 管理员封禁用户（status: 0-正常, 1-封禁）
+func (s *UserService) AdminBanUser(targetUserID string) error {
+	db := database.GetDB()
+
+	var user models.User
+	if err := db.Where("id = ?", targetUserID).First(&user).Error; err != nil {
+		return errors.New("用户不存在")
+	}
+
+	// 设置status为1表示封禁
+	if err := db.Model(&user).Updates(map[string]interface{}{
+		"status":     int64(1),
+		"updated_at": time.Now(),
+	}).Error; err != nil {
+		return fmt.Errorf("封禁用户失败: %w", err)
+	}
+
+	return nil
+}
+
+// AdminUnbanUser 管理员解封用户
+func (s *UserService) AdminUnbanUser(targetUserID string) error {
+	db := database.GetDB()
+
+	var user models.User
+	if err := db.Where("id = ?", targetUserID).First(&user).Error; err != nil {
+		return errors.New("用户不存在")
+	}
+
+	// 设置status为0表示正常
+	if err := db.Model(&user).Updates(map[string]interface{}{
+		"status":     int64(0),
+		"updated_at": time.Now(),
+	}).Error; err != nil {
+		return fmt.Errorf("解封用户失败: %w", err)
+	}
+
+	return nil
+}
+
+// AdminDeleteUser 管理员删除用户
+func (s *UserService) AdminDeleteUser(targetUserID string) error {
+	db := database.GetDB()
+
+	var user models.User
+	if err := db.Where("id = ?", targetUserID).First(&user).Error; err != nil {
+		return errors.New("用户不存在")
+	}
+
+	// 删除用户（级联删除相关数据）
+	if err := db.Delete(&user).Error; err != nil {
+		return fmt.Errorf("删除用户失败: %w", err)
+	}
+
+	return nil
 }

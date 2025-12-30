@@ -68,6 +68,8 @@ func SetupRoutes(router *gin.Engine) {
 			admin.DELETE("/users/:userId", handlers.AdminDeleteUser)
 			// 管理员删除帖子
 			admin.DELETE("/posts/:id", handlers.AdminDeleteMoment)
+			// 管理员删除评论
+			admin.DELETE("/comments/:id", handlers.AdminDeleteComment)
 		}
 
 		// 认证相关

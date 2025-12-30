@@ -16,7 +16,7 @@ func CreateComment(postID int64, userID, content string, replies []map[string]in
 	}
 	
 	comment := &models.Comment{
-		PostID:    int(postID),
+		PostID:    postID,
 		UserID:    userID,
 		Content:   content,
 		Status:    0, // 正常状态
@@ -97,32 +97,57 @@ func UpdateComment(commentID int64, userID, content string) (*models.Comment, er
 	return &comment, nil
 }
 
-// DeleteComment 删除评论
+// DeleteComment 删除评论（仅评论作者）
 func DeleteComment(commentID int64, userID string) error {
 	// 软删除：更新状态
 	result := getDB().Model(&models.Comment{}).
 		Where("id = ? AND user_id = ?", commentID, userID).
 		Update("status", 1)
-	
+
 	if result.Error != nil {
 		return result.Error
 	}
-	
+
 	if result.RowsAffected == 0 {
 		return gorm.ErrRecordNotFound
 	}
-	
+
 	// 获取评论信息用于更新计数
 	var comment models.Comment
 	if err := getDB().First(&comment, "id = ?", commentID).Error; err == nil {
 		// 更新帖子评论数
 		getDB().Model(&models.Post{}).Where("id = ?", comment.PostID).Update("comment_count", gorm.Expr("GREATEST(comment_count - ?, 0)", 1))
-		
+
 		// 更新用户评论数
 		getDB().Model(&models.User{}).Where("id = ?", userID).Update("comment_count", gorm.Expr("GREATEST(comment_count - ?, 0)", 1))
 	}
-	
+
 	return nil
+}
+
+// AdminDeleteComment 管理员删除评论
+func AdminDeleteComment(commentID int64) (*models.Comment, error) {
+	var comment models.Comment
+
+	// 查找评论
+	if err := getDB().First(&comment, "id = ? AND status = ?", commentID, 0).Error; err != nil {
+		return nil, err
+	}
+
+	// 软删除：更新状态
+	if err := getDB().Model(&models.Comment{}).
+		Where("id = ?", commentID).
+		Update("status", 1).Error; err != nil {
+		return nil, err
+	}
+
+	// 更新帖子评论数
+	getDB().Model(&models.Post{}).Where("id = ?", comment.PostID).Update("comment_count", gorm.Expr("GREATEST(comment_count - ?, 0)", 1))
+
+	// 更新用户评论数
+	getDB().Model(&models.User{}).Where("id = ?", comment.UserID).Update("comment_count", gorm.Expr("GREATEST(comment_count - ?, 0)", 1))
+
+	return &comment, nil
 }
 
 // ToggleLikeComment 点赞/取消点赞评论
@@ -142,7 +167,7 @@ func ToggleLikeComment(commentID int64, userID string) (bool, error) {
 		newLike := models.Like{
 			UserID:     userID,
 			TargetType: 2, // 评论
-			TargetID:   int(commentID),
+			TargetID:   commentID,
 			CreatedAt:  time.Now(),
 		}
 		

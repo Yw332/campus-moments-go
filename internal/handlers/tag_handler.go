@@ -185,22 +185,51 @@ func GetTagPosts(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "标签名不能为空"})
 		return
 	}
-	
+
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "20"))
 	userID := c.GetString("userID")
-	
+
 	posts, total, err := service.GetTagPosts(tagName, userID, page, pageSize)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "获取失败: " + err.Error()})
 		return
 	}
-	
+
+	// 转换为响应格式（id -> postId, user -> author）
+	convertedPosts := make([]map[string]interface{}, 0, len(posts))
+	for _, post := range posts {
+		postData := map[string]interface{}{
+			"postId":    post.ID,
+			"title":     post.Title,
+			"content":   post.Content,
+			"images":    post.Images,
+			"video":     post.Video,
+			"tags":      post.Tags,
+			"createdAt": post.CreatedAt,
+			"likeCount": post.LikeCount,
+			"commentCount": post.CommentCount,
+			"viewCount": post.ViewCount,
+			"visibility": post.Visibility,
+		}
+
+		// 添加作者信息
+		if post.User != nil {
+			postData["author"] = map[string]interface{}{
+				"userId":   post.User.ID,
+				"username": post.User.Username,
+				"avatar":   post.User.Avatar,
+			}
+		}
+
+		convertedPosts = append(convertedPosts, postData)
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"code": http.StatusOK,
 		"message":  "获取成功",
 		"data": gin.H{
-			"posts": posts,
+			"posts": convertedPosts,
 			"total": total,
 			"page":  page,
 			"pageSize": pageSize,
