@@ -164,7 +164,7 @@ Authorization: Bearer <your_token_here>
 ```json
 {
   "phone": "17875242005",
-  "code": "123456",
+  "verificationCode": "123456",
   "newPassword": "NewPassword123"
 }
 ```
@@ -321,7 +321,6 @@ Authorization: Bearer <your_token>
 | DELETE | `/api/posts/:id` | 删除帖子 | ✅ |
 | GET | `/api/posts/my` | 获取我的帖子 | ✅ |
 | GET | `/api/posts/user/:userId` | 获取用户帖子 | ✅ |
-| GET | `/api/posts/:id/likes` | 获取帖子点赞列表 | ✅ |
 
 #### 4.1 创建帖子
 
@@ -562,7 +561,7 @@ Authorization: Bearer <your_token>
 #### 7.2 获取好友请求列表
 
 **查询参数**：
-- `type`: 类型（pending-待处理，all-全部）
+- `type`: 类型（sent-发送的，received-收到的，默认received）
 
 #### 7.3 处理好友请求
 
@@ -582,19 +581,29 @@ Authorization: Bearer <your_token>
 
 #### 7.4 获取好友列表
 
+**查询参数**：
+- `keyword`: 搜索关键词（可选）
+- `page`: 页码
+- `pageSize`: 每页数量
+
 **成功响应**：
 ```json
 {
   "code": 200,
   "message": "获取成功",
-  "data": [
-    {
-      "userId": 2,
-      "username": "好友名",
-      "avatar": "头像URL",
-      "remark": "备注名"
-    }
-  ]
+  "data": {
+    "friends": [
+      {
+        "userId": 2,
+        "username": "好友名",
+        "avatar": "头像URL",
+        "remarkName": "备注名"
+      }
+    ],
+    "total": 10,
+    "page": 1,
+    "pageSize": 50
+  }
 }
 ```
 
@@ -606,7 +615,7 @@ Authorization: Bearer <your_token>
 **请求参数**：
 ```json
 {
-  "remark": "新备注"
+  "remarkName": "新备注"
 }
 ```
 
@@ -724,8 +733,9 @@ Authorization: Bearer <your_token>
 #### 10.1 获取标签列表
 
 **查询参数**：
-- `page`: 页码
-- `pageSize`: 每页数量
+- `page`: 页码（可选，默认1）
+- `pageSize`: 每页数量（可选，默认50）
+- `status`: 状态（可选，默认0-正常，1-禁用）
 
 **成功响应**：
 ```json
@@ -778,9 +788,8 @@ Authorization: Bearer <your_token>
 
 **查询参数**：
 - `keyword`: 搜索关键词
-- `type`: 搜索类型（all, posts, users, tags）
-- `page`: 页码
-- `pageSize`: 每页数量
+- `page`: 页码（可选，默认1）
+- `pageSize`: 每页数量（可选，默认10）
 
 **成功响应**：
 ```json
@@ -817,8 +826,7 @@ Authorization: Bearer <your_token>
 **请求参数**：
 ```json
 {
-  "keyword": "搜索关键词",
-  "searchType": "posts"
+  "keyword": "搜索关键词"
 }
 ```
 
@@ -847,10 +855,15 @@ file: File (必需) - 上传的文件
 **响应示例**：
 ```json
 {
-  "code": 200,
+  "code": 0,
   "message": "文件上传成功",
   "data": {
-    "fileUrl": "http://106.52.165.122:8080/uploads/files/1_20241230150000_uuid.jpg"
+    "fileId": "uuid前16位",
+    "filename": "文件名",
+    "originalName": "原始文件名",
+    "fileSize": 文件大小,
+    "fileType": ".jpg",
+    "fileUrl": "http://106.52.165.122:8080/static/files/文件名"
   }
 }
 ```
@@ -872,11 +885,12 @@ avatar: File (必需) - 头像文件
 **响应示例**：
 ```json
 {
-  "code": 200,
+  "code": 0,
   "message": "头像上传成功",
   "data": {
-    "avatarUrl": "http://106.52.165.122:8080/uploads/avatars/1_20241230150000_uuid.jpg",
-    "userId": 1
+    "avatarUrl": "http://106.52.165.122:8080/static/avatars/文件名",
+    "filename": "文件名",
+    "size": 文件大小
   }
 }
 ```
