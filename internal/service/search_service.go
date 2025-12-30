@@ -13,9 +13,14 @@ type SearchService struct {
 }
 
 func NewSearchService() *SearchService {
-	return &SearchService{
-		db: database.GetDB(),
+	return &SearchService{}
+}
+
+func (s *SearchService) getDB() *gorm.DB {
+	if s.db == nil {
+		s.db = database.GetDB()
 	}
+	return s.db
 }
 
 type SearchRequest struct {
@@ -25,9 +30,9 @@ type SearchRequest struct {
 }
 
 type SearchResponse struct {
-	Posts      []models.Moment `json:"posts"`
-	Users      []models.User   `json:"users"`
-	Pagination Pagination      `json:"pagination"`
+	Posts      []models.Post `json:"posts"`
+	Users      []models.User `json:"users"`
+	Pagination Pagination    `json:"pagination"`
 }
 
 type FilterRequest struct {
@@ -57,7 +62,7 @@ func (s *SearchService) SearchContent(keyword string, page, pageSize int) (*Sear
 
 	offset := (page - 1) * pageSize
 
-	var posts []models.Moment
+	var posts []models.Post
 	var totalPosts int64
 	var users []models.User
 	var totalUsers int64
@@ -71,8 +76,8 @@ func (s *SearchService) SearchContent(keyword string, page, pageSize int) (*Sear
 		}, nil
 	}
 
-	// 搜索动态（使用Moment模型）
-	postQuery := s.db.Model(&models.Moment{}).
+	// 搜索动态（使用Post模型）
+	postQuery := s.getDB().Model(&models.Post{}).
 		Where("(title LIKE ? OR content LIKE ?) AND status = ?", 
 			"%"+keyword+"%", "%"+keyword+"%", 0).
 		Preload("User").
@@ -87,7 +92,7 @@ func (s *SearchService) SearchContent(keyword string, page, pageSize int) (*Sear
 	}
 
 	// 搜索用户
-	userQuery := s.db.Model(&models.User{}).
+	userQuery := s.getDB().Model(&models.User{}).
 		Where("username LIKE ? OR signature LIKE ?", "%"+keyword+"%", "%"+keyword+"%")
 
 	// 统计用户总数
@@ -120,13 +125,8 @@ func (s *SearchService) GetHotWords() ([]string, error) {
 		Count   int    `json:"count"`
 	}
 	
-	if err := s.db.Model(&models.SearchHistory{}).
-		Select("keyword, COUNT(*) as count").
-		Where("created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR)").
-		Group("keyword").
-		Order("count DESC, created_at DESC").
-		Limit(10).
-		Find(&results).Error; err != nil {
+	if err := s.getDB().Raw("SELECT keyword, COUNT(*) as count FROM search_histories WHERE created_at >= DATE_SUB(NOW(), INTERVAL 24 HOUR) GROUP BY keyword ORDER BY count DESC, created_at DESC LIMIT 10").
+		Scan(&results).Error; err != nil {
 		// 如果查询失败，返回默认热词
 		return []string{"校园", "活动", "学习", "美食", "运动", "兼职", "考试", "社团", "室友", "考研"}, nil
 	}
@@ -214,14 +214,14 @@ func (s *SearchService) GetFilteredContent(filter *FilterRequest) (*SearchRespon
 		query = query.Where("created_at <= ?", filter.EndDate+" 23:59:59")
 	}
 
-	var posts []models.Moment
+	var posts []models.Post
 	var total int64
 
 	// 统计总数
-	query.Count(&total)
+	s.getDB().Model(&models.Post{}).Count(&total)
 
 	// 分页查询
-	if err := query.Order("created_at DESC").Offset(offset).Limit(filter.PageSize).Find(&posts).Error; err != nil {
+	if err := s.getDB().Order("created_at DESC").Offset(offset).Limit(filter.PageSize).Find(&posts).Error; err != nil {
 		return nil, fmt.Errorf("获取筛选内容失败: %v", err)
 	}
 

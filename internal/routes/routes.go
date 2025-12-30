@@ -141,9 +141,11 @@ func SetupRoutes(router *gin.Engine) {
 			users.GET("/profile", handlers.GetProfile)
 			users.PUT("/profile", handlers.UpdateUserProfile)
 			users.PUT("/password", handlers.ChangePassword)
-			users.GET("/likes", func(c *gin.Context) {
-				c.Redirect(302, "/api/likes/users/")
-			})
+			users.PUT("/avatar", handlers.UpdateAvatar)
+			users.PUT("/signature", handlers.UpdateSignature)
+			users.POST("/active", handlers.UpdateLastActive)
+			users.GET("/:userId", handlers.GetUserByID)
+			users.GET("/search", handlers.SearchUsers)
 		}
 
 		// ========== 搜索相关 ==========

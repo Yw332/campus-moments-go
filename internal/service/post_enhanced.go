@@ -28,7 +28,7 @@ type PostResponse struct {
 // ConvertToPostResponse 将Post模型转换为响应格式
 func ConvertToPostResponse(post models.Post) PostResponse {
 	response := PostResponse{
-		ID:           post.ID,
+		ID:           int64(post.ID),
 		Title:        post.Title,
 		Content:      post.Content,
 		Video:        post.Video,

@@ -24,7 +24,7 @@ func ToggleLikePost(postID int64, userID string) (bool, error) {
 		newLike := models.Like{
 			UserID:     userID,
 			TargetType: 1, // 帖子
-			TargetID:   postID,
+			TargetID:   int(postID),
 			CreatedAt:  time.Now(),
 		}
 		

@@ -136,7 +136,7 @@ func GetProfile(c *gin.Context) {
 	}
 
 	uid := userID.(string)
-	user, err := authService.GetUserByIDStr(uid)
+	user, err := service.NewUserService().GetUserByID(uid)
 	if err != nil {
 		c.JSON(http.StatusNotFound, gin.H{
 			"code":    404,
@@ -149,11 +149,7 @@ func GetProfile(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{
 		"code":    200,
 		"message": "获取成功",
-		"data": gin.H{
-			"userId":   user.ID,
-			"username": user.Username,
-			"phone":    user.Phone,
-		},
+		"data":    user,
 	})
 }
 
@@ -185,7 +181,7 @@ func ChangePassword(c *gin.Context) {
 	}
 
 	uid := userID.(string)
-	if err := authService.UpdatePasswordStr(uid, req.OldPassword, req.NewPassword); err != nil {
+	if err := service.NewUserService().UpdatePassword(uid, req.OldPassword, req.NewPassword); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code":    400,
 			"message": err.Error(),
@@ -215,15 +211,31 @@ func UpdateUserProfile(c *gin.Context) {
 	}
 
 	uid := userID.(string)
-	
-	// 临时实现，实际应该从请求体获取数据
+
+	var req service.UpdateProfileRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    400,
+			"message": "参数错误: " + err.Error(),
+			"data":    nil,
+		})
+		return
+	}
+
+	user, err := service.NewUserService().UpdateProfile(uid, &req)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    400,
+			"message": err.Error(),
+			"data":    nil,
+		})
+		return
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"code":    200,
 		"message": "更新成功",
-		"data": gin.H{
-			"userID": uid,
-			"updated": true,
-		},
+		"data":    user,
 	})
 }
 

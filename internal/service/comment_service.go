@@ -8,7 +8,7 @@ import (
 )
 
 // CreateComment 创建评论
-func CreateComment(postID int, userID, content string, replies []map[string]interface{}) (*models.Comment, error) {
+func CreateComment(postID int64, userID, content string, replies []map[string]interface{}) (*models.Comment, error) {
 	// 检查帖子是否存在
 	var post models.Post
 	if err := getDB().First(&post, "id = ? AND status = ?", postID, 0).Error; err != nil {
@@ -16,7 +16,7 @@ func CreateComment(postID int, userID, content string, replies []map[string]inte
 	}
 	
 	comment := &models.Comment{
-		PostID:    postID,
+		PostID:    int(postID),
 		UserID:    userID,
 		Content:   content,
 		Status:    0, // 正常状态
@@ -142,7 +142,7 @@ func ToggleLikeComment(commentID int64, userID string) (bool, error) {
 		newLike := models.Like{
 			UserID:     userID,
 			TargetType: 2, // 评论
-			TargetID:   commentID,
+			TargetID:   int(commentID),
 			CreatedAt:  time.Now(),
 		}
 		
