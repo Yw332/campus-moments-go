@@ -619,9 +619,208 @@ Authorization: Bearer <your_token>
 }
 ```
 
+**成功响应**：
+```json
+{
+  "code": 200,
+  "message": "更新成功",
+  "data": null
+}
+```
+
+#### 7.6 搜索好友
+
+**查询参数**：
+- `keyword`: 搜索关键词（必填）
+- `page`: 页码
+- `pageSize`: 每页数量
+
+**成功响应**：
+```json
+{
+  "code": 200,
+  "message": "搜索成功",
+  "data": {
+    "friends": [],
+    "total": 0,
+    "page": 1,
+    "pageSize": 20
+  }
+}
+```
+
 ---
 
-### 8. 消息接口
+### 8. 管理员接口
+
+所有管理员接口都需要管理员权限。
+
+| 方法 | 路径 | 说明 | 认证 |
+|------|------|------|------|
+| GET | `/api/admin/users` | 获取所有用户列表 | ✅ 管理员 |
+| GET | `/api/admin/users/:userId/posts` | 查看用户动态 | ✅ 管理员 |
+| GET | `/api/admin/users/:userId/friends` | 查看用户好友 | ✅ 管理员 |
+| PUT | `/api/admin/users/:userId/password` | 重置用户密码 | ✅ 管理员 |
+| PUT | `/api/admin/users/:userId/ban` | 封禁用户 | ✅ 管理员 |
+| PUT | `/api/admin/users/:userId/unban` | 解封用户 | ✅ 管理员 |
+| DELETE | `/api/admin/users/:userId` | 删除用户 | ✅ 管理员 |
+| DELETE | `/api/admin/posts/:id` | 删除用户动态 | ✅ 管理员 |
+
+#### 8.1 获取所有用户列表
+
+**查询参数**：
+- `keyword`: 搜索关键词（可选）
+- `page`: 页码
+- `pageSize`: 每页数量
+
+**成功响应**：
+```json
+{
+  "code": 200,
+  "message": "获取成功",
+  "data": {
+    "users": [],
+    "total": 25,
+    "page": 1,
+    "pageSize": 20
+  }
+}
+```
+
+#### 8.2 查看用户动态
+
+**路径参数**：
+- `userId`: 用户ID
+
+**查询参数**：
+- `page`: 页码
+- `pageSize`: 每页数量
+
+**成功响应**：
+```json
+{
+  "code": 200,
+  "message": "获取成功",
+  "data": {
+    "posts": [],
+    "total": 0,
+    "page": 1,
+    "pageSize": 20
+  }
+}
+```
+
+#### 8.3 查看用户好友
+
+**路径参数**：
+- `userId`: 用户ID
+
+**查询参数**：
+- `page`: 页码
+- `pageSize`: 每页数量
+
+**成功响应**：
+```json
+{
+  "code": 200,
+  "message": "获取成功",
+  "data": {
+    "friends": [],
+    "total": 0,
+    "page": 1,
+    "pageSize": 20
+  }
+}
+```
+
+#### 8.4 重置用户密码
+
+**路径参数**：
+- `userId`: 用户ID
+
+**请求参数**：
+```json
+{
+  "newPassword": "newpassword123"
+}
+```
+
+**成功响应**：
+```json
+{
+  "code": 200,
+  "message": "密码重置成功",
+  "data": {
+    "userId": "0000000001"
+  }
+}
+```
+
+#### 8.5 封禁用户
+
+**路径参数**：
+- `userId`: 用户ID
+
+**成功响应**：
+```json
+{
+  "code": 200,
+  "message": "封禁成功",
+  "data": {
+    "userId": "0000000001"
+  }
+}
+```
+
+#### 8.6 解封用户
+
+**路径参数**：
+- `userId`: 用户ID
+
+**成功响应**：
+```json
+{
+  "code": 200,
+  "message": "解封成功",
+  "data": {
+    "userId": "0000000001"
+  }
+}
+```
+
+#### 8.7 删除用户
+
+**路径参数**：
+- `userId`: 用户ID
+
+**成功响应**：
+```json
+{
+  "code": 200,
+  "message": "删除成功",
+  "data": null
+}
+```
+
+#### 8.8 删除用户动态
+
+**路径参数**：
+- `id`: 动态ID
+
+**成功响应**：
+```json
+{
+  "code": 200,
+  "message": "删除成功",
+  "data": {
+    "postId": 46
+  }
+}
+```
+
+---
+
+### 9. 消息接口
 
 | 方法 | 路径 | 说明 | 认证 |
 |------|------|------|------|

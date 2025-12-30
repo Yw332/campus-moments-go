@@ -50,10 +50,26 @@ func SetupRoutes(router *gin.Engine) {
 	router.GET("/search/hot-words", handlers.GetHotWords)
 	router.GET("/search/suggestions", handlers.GetSearchSuggestions)
 
-	// ========== 需要认证的路由 ==========
+		// ========== 需要认证的路由 ==========
 	api := router.Group("/api")
 	api.Use(middleware.AuthMiddleware())
 	{
+		// ========== 管理员专用路由 ==========
+		admin := api.Group("/admin")
+		admin.Use(middleware.AdminMiddleware())
+		{
+			// 管理员用户管理
+			admin.GET("/users", handlers.AdminGetAllUsers)
+			admin.GET("/users/:userId/posts", handlers.AdminGetUserPosts)
+			admin.GET("/users/:userId/friends", handlers.AdminGetUserFriends)
+			admin.PUT("/users/:userId/password", handlers.AdminResetUserPassword)
+			admin.PUT("/users/:userId/ban", handlers.AdminBanUser)
+			admin.PUT("/users/:userId/unban", handlers.AdminUnbanUser)
+			admin.DELETE("/users/:userId", handlers.AdminDeleteUser)
+			// 管理员删除帖子
+			admin.DELETE("/posts/:id", handlers.AdminDeleteMoment)
+		}
+
 		// 认证相关
 		api.POST("/auth/logout", handlers.Logout)
 

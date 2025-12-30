@@ -81,17 +81,18 @@ func HandleFriendRequest(c *gin.Context) {
 		c.JSON(http.StatusForbidden, gin.H{"error": "处理失败: " + err.Error()})
 		return
 	}
-	
+
 	var msg string
 	if req.Action == "accept" {
 		msg = "已同意好友请求"
 	} else {
 		msg = "已拒绝好友请求"
 	}
-	
+
 	c.JSON(http.StatusOK, gin.H{
-		"code": http.StatusOK,
-		"message":  msg,
+		"code":    http.StatusOK,
+		"message": msg,
+		"data":    nil,
 	})
 }
 
@@ -127,17 +128,18 @@ func DeleteFriend(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "好友ID不能为空"})
 		return
 	}
-	
+
 	userID := c.GetString("userID")
 	err := service.DeleteFriend(userID, friendID)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "删除失败: " + err.Error()})
 		return
 	}
-	
+
 	c.JSON(http.StatusOK, gin.H{
-		"code": http.StatusOK,
-		"message":  "删除成功",
+		"code":    http.StatusOK,
+		"message": "删除成功",
+		"data":    nil,
 	})
 }
 
@@ -148,26 +150,27 @@ func UpdateFriendRemark(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "好友ID不能为空"})
 		return
 	}
-	
+
 	var req struct {
 		RemarkName string `json:"remarkName" binding:"max=50"`
 	}
-	
+
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "参数错误: " + err.Error()})
 		return
 	}
-	
+
 	userID := c.GetString("userID")
 	err := service.UpdateFriendRemark(userID, friendID, req.RemarkName)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "更新失败: " + err.Error()})
 		return
 	}
-	
+
 	c.JSON(http.StatusOK, gin.H{
-		"code": http.StatusOK,
-	"message":  "更新成功",
+		"code":    http.StatusOK,
+		"message": "更新成功",
+		"data":    nil,
 	})
 }
 
