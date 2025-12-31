@@ -28,8 +28,8 @@ func LikePost(c *gin.Context) {
 			"data":    nil,
 		})
 		return
-	}tijiaodao1
-	
+	}
+
 	var msg string
 	if liked {
 		msg = "点赞成功"

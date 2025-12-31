@@ -400,7 +400,7 @@ func AdminGetUserPosts(c *gin.Context) {
 			postData["author"] = map[string]interface{}{
 				"userId":   post.User.ID,
 				"username": post.User.Username,
-				"avatar":   post.User.Avatar,
+				"avatarUrl":   post.User.Avatar,
 			}
 		}
 

@@ -9,7 +9,7 @@ type User struct {
 	Username        string    `json:"username" gorm:"column:username;type:varchar(20);not null"`
 	Password        string    `json:"-" gorm:"column:password;type:varchar(80);not null"` // 密码不返回给前端
 	Phone           string    `json:"phone" gorm:"column:phone;type:varchar(15)"`
-	Avatar          string    `json:"avatar" gorm:"column:avatar;type:varchar(500)"`
+	AvatarURL       string    `json:"avatarUrl" gorm:"column:avatar;type:varchar(500)"`
 	AvatarType      int       `json:"avatarType" gorm:"column:avatar_type;type:tinyint"`
 	AvatarUpdatedAt *time.Time `json:"avatarUpdatedAt" gorm:"column:avatar_updated_at;type:datetime"`
 	PostCount       int       `json:"postCount" gorm:"column:post_count;type:int;default:0"`

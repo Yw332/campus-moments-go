@@ -44,7 +44,7 @@ func GetHomePage(c *gin.Context) {
 			postData["author"] = map[string]interface{}{
 				"userId":   post.User.ID,
 				"username": post.User.Username,
-				"avatar":   post.User.Avatar,
+				"avatarUrl":   post.User.Avatar,
 			}
 		}
 
@@ -98,7 +98,7 @@ func GetPostListEnhanced(c *gin.Context) {
 		postData["author"] = map[string]interface{}{
 			"userId":   post.AuthorID,
 			"username": post.Username,
-			"avatar":   post.Avatar,
+			"avatarUrl":   post.Avatar,
 		}
 
 		convertedPosts = append(convertedPosts, postData)

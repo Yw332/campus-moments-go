@@ -211,7 +211,7 @@ Authorization: Bearer <your_token>
     "userId": 4,
     "username": "Yw166332",
     "phone": "17875242005",
-    "avatar": "",
+    "avatarUrl": "",
     "signature": "",
     "wechatNickname": ""
   }
@@ -225,7 +225,7 @@ Authorization: Bearer <your_token>
 {
   "username": "新用户名",
   "phone": "13800138000",
-  "avatar": "头像URL",
+  "avatarUrl": "头像URL",
   "signature": "个性签名",
   "wechatNickname": "微信昵称"
 }
@@ -246,7 +246,7 @@ Authorization: Bearer <your_token>
 **请求参数**：
 ```json
 {
-  "avatar": "头像URL"
+  "avatarUrl": "头像URL"
 }
 ```
 
@@ -281,7 +281,7 @@ Authorization: Bearer <your_token>
   "data": {
     "userId": 4,
     "username": "Yw166332",
-    "avatar": "头像URL",
+    "avatarUrl": "头像URL",
     "signature": "个性签名"
   }
 }
@@ -301,7 +301,7 @@ Authorization: Bearer <your_token>
     {
       "userId": 4,
       "username": "Yw166332",
-      "avatar": "头像URL"
+      "avatarUrl": "头像URL"
     }
   ]
 }
@@ -411,7 +411,7 @@ Authorization: Bearer <your_token>
         "author": {
           "userId": 1,
           "username": "用户名",
-          "avatar": "头像URL"
+          "avatarUrl": "头像URL"
         },
         "createdAt": "2024-12-30T10:00:00Z"
       }
@@ -528,7 +528,7 @@ Authorization: Bearer <your_token>
     {
       "userId": 1,
       "username": "用户名",
-      "avatar": "头像URL"
+      "avatarUrl": "头像URL"
     }
   ]
 }
@@ -596,7 +596,7 @@ Authorization: Bearer <your_token>
       {
         "userId": 2,
         "username": "好友名",
-        "avatar": "头像URL",
+        "avatarUrl": "头像URL",
         "remarkName": "备注名"
       }
     ],
@@ -1071,7 +1071,7 @@ file: File (必需) - 上传的文件
 **响应示例**：
 ```json
 {
-  "code": 0,
+  "code": 200,
   "message": "文件上传成功",
   "data": {
     "fileId": "uuid前16位",
@@ -1079,7 +1079,7 @@ file: File (必需) - 上传的文件
     "originalName": "原始文件名",
     "fileSize": 文件大小,
     "fileType": ".jpg",
-    "fileUrl": "http://106.52.165.122:8080/static/files/文件名"
+    "fileUrl": "http://localhost:8080/static/files/文件名"
   }
 }
 ```
@@ -1101,10 +1101,10 @@ avatar: File (必需) - 头像文件
 **响应示例**：
 ```json
 {
-  "code": 0,
+  "code": 200,
   "message": "头像上传成功",
   "data": {
-    "avatarUrl": "http://106.52.165.122:8080/static/avatars/文件名",
+    "avatarUrl": "http://localhost:8080/static/avatars/文件名",
     "filename": "文件名",
     "size": 文件大小
   }
@@ -1118,7 +1118,7 @@ async function uploadAvatar(file) {
   const formData = new FormData();
   formData.append('avatar', file);
 
-  const response = await fetch('http://106.52.165.122:8080/api/upload/avatar', {
+  const response = await fetch('http://localhost:8080/api/upload/avatar', {
     method: 'POST',
     headers: {
       'Authorization': 'Bearer ' + localStorage.getItem('token')
@@ -1195,7 +1195,7 @@ const authRequest = async (url, options = {}) => {
 const uploadAvatar = async (file) => {
   const formData = new FormData();
   formData.append('avatar', file);
-  const response = await fetch('http://106.52.165.122:8080/api/upload/avatar', {
+  const response = await fetch('http://localhost:8080/api/upload/avatar', {
     method: 'POST',
     headers: {
       'Authorization': 'Bearer ' + localStorage.getItem('token')
