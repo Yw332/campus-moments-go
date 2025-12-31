@@ -156,7 +156,7 @@ func GetUserLikes(c *gin.Context) {
 			likeData["user"] = map[string]interface{}{
 				"id":              like.User.ID,
 				"username":        like.User.Username,
-				"avatarUrl":       like.User.Avatar,
+				"avatarUrl":       like.User.AvatarURL,
 				"avatarType":      like.User.AvatarType,
 				"avatarUpdatedAt": like.User.AvatarUpdatedAt,
 				"signature":       like.User.Signature,

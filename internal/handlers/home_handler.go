@@ -44,7 +44,7 @@ func GetHomePage(c *gin.Context) {
 			postData["author"] = map[string]interface{}{
 				"userId":   post.User.ID,
 				"username": post.User.Username,
-				"avatarUrl":   post.User.Avatar,
+				"avatarUrl":   post.User.AvatarURL,
 			}
 		}
 
