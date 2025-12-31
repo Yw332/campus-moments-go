@@ -26,8 +26,8 @@ type Moment struct {
 	CreatedAt       time.Time       `json:"createdAt" gorm:"column:created_at;type:datetime"`
 	UpdatedAt       time.Time       `json:"updatedAt" gorm:"column:updated_at;type:datetime"`
 	
-	// 关联字段
-	User            *User           `json:"user,omitempty" gorm:"foreignKey:UserID"`
+	// 关联字段（不设置外键约束）
+	User            *User           `json:"user,omitempty"`
 
 	// 兼容字段（保持向后兼容）
 	AuthorID        string          `json:"authorId,omitempty" gorm:"-"`

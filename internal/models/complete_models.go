@@ -19,9 +19,9 @@ type Comment struct {
 	CreatedAt     time.Time     `json:"createdAt" gorm:"column:created_at;type:datetime"`
 	UpdatedAt     time.Time     `json:"updatedAt" gorm:"column:updated_at;type:datetime"`
 
-	// 关联字段
-	User          *User         `json:"user,omitempty" gorm:"foreignKey:UserID"`
-	Post          *Post         `json:"post,omitempty" gorm:"foreignKey:PostID;references:ID"`
+	// 关联字段（不设置外键约束）
+	User          *User         `json:"user,omitempty"`
+	Post          *Post         `json:"post,omitempty"`
 }
 
 // 表名
@@ -37,9 +37,9 @@ type Like struct {
 	TargetID   int64     `json:"targetId" gorm:"column:target_id;type:bigint;not null;index"`
 	CreatedAt  time.Time `json:"createdAt" gorm:"column:created_at;type:datetime"`
 
-	// 关联字段
-	User *User `json:"user,omitempty" gorm:"foreignKey:UserID"`
-	Post *Post `json:"post,omitempty" gorm:"foreignKey:TargetID;references:ID"`
+	// 关联字段（不设置外键约束）
+	User *User `json:"user,omitempty"`
+	Post *Post `json:"post,omitempty"`
 }
 
 // 表名
@@ -61,10 +61,10 @@ type Message struct {
 	DeviceID       string    `json:"deviceId" gorm:"column:device_id;type:varchar(64)"`
 	ServerMsgID    string    `json:"serverMsgId" gorm:"column:server_msg_id;type:varchar(64)"`
 	CreatedAt      time.Time `json:"createdAt" gorm:"column:created_at;type:datetime"`
-	
-	// 关联字段
-	Sender         *User     `json:"sender,omitempty" gorm:"foreignKey:SenderID"`
-	Receiver       *User     `json:"receiver,omitempty" gorm:"foreignKey:ReceiverID"`
+
+	// 关联字段（不设置外键约束）
+	Sender         *User     `json:"sender,omitempty"`
+	Receiver       *User     `json:"receiver,omitempty"`
 }
 
 // 表名
@@ -83,11 +83,11 @@ type Conversation struct {
 	IsPinned        bool       `json:"isPinned" gorm:"column:is_pinned;type:tinyint(1);default:0"`
 	IsMuted         bool       `json:"isMuted" gorm:"column:is_muted;type:tinyint(1);default:0"`
 	UpdatedAt       time.Time  `json:"updatedAt" gorm:"column:updated_at;type:datetime"`
-	
-	// 关联字段
-	User            *User      `json:"user,omitempty" gorm:"foreignKey:UserID"`
-	Peer            *User      `json:"peer,omitempty" gorm:"foreignKey:PeerID"`
-	LastMessage     *Message   `json:"lastMessage,omitempty" gorm:"foreignKey:LastMsgID;references:ID"`
+
+	// 关联字段（不设置外键约束）
+	User            *User      `json:"user,omitempty"`
+	Peer            *User      `json:"peer,omitempty"`
+	LastMessage     *Message   `json:"lastMessage,omitempty"`
 }
 
 // 表名
@@ -105,10 +105,10 @@ type FriendRelation struct {
 	Status       int        `json:"status" gorm:"column:status;type:tinyint;default:0;comment:0-正常 1-已删除"`
 	CreatedAt    time.Time  `json:"createdAt" gorm:"column:created_at;type:datetime"`
 	UpdatedAt    time.Time  `json:"updatedAt" gorm:"column:updated_at;type:datetime"`
-	
-	// 关联字段
-	User         *User      `json:"user,omitempty" gorm:"foreignKey:UserID"`
-	Friend       *User      `json:"friend,omitempty" gorm:"foreignKey:FriendID"`
+
+	// 关联字段（不设置外键约束）
+	User         *User      `json:"user,omitempty"`
+	Friend       *User      `json:"friend,omitempty"`
 }
 
 // 表名
@@ -126,10 +126,10 @@ type FriendRequest struct {
 	ExpiresAt  time.Time  `json:"expiresAt" gorm:"column:expires_at;type:datetime"`
 	CreatedAt  time.Time  `json:"createdAt" gorm:"column:created_at;type:datetime"`
 	UpdatedAt  time.Time  `json:"updatedAt" gorm:"column:updated_at;type:datetime"`
-	
-	// 关联字段
-	FromUser   *User      `json:"fromUser,omitempty" gorm:"foreignKey:FromUserID"`
-	ToUser     *User      `json:"toUser,omitempty" gorm:"foreignKey:ToUserID"`
+
+	// 关联字段（不设置外键约束）
+	FromUser   *User      `json:"fromUser,omitempty"`
+	ToUser     *User      `json:"toUser,omitempty"`
 }
 
 // 表名
@@ -176,8 +176,8 @@ type Post struct {
 	CreatedAt       time.Time       `json:"createdAt" gorm:"column:created_at;type:datetime"`
 	UpdatedAt       time.Time       `json:"updatedAt" gorm:"column:updated_at;type:datetime"`
 	
-	// 关联字段
-	User            *User           `json:"user,omitempty" gorm:"foreignKey:UserID"`
+	// 关联字段（不设置外键约束）
+	User            *User           `json:"user,omitempty"`
 }
 
 // 表名
