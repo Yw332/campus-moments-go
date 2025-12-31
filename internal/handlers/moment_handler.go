@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"net/http"
 	"strconv"
 
@@ -79,11 +80,44 @@ func GetMoments(c *gin.Context) {
 		return
 	}
 
+	// 转换为前端需要的格式
+	convertedList := make([]gin.H, 0, len(list))
+	for _, moment := range list {
+		// 提取第一张图片作为imageUrl
+		var imageUrl string
+		if moment.Images != nil && len(moment.Images) > 0 {
+			var images []string
+			if err := json.Unmarshal(moment.Images, &images); err == nil && len(images) > 0 {
+				imageUrl = images[0]
+			}
+		}
+
+		// 获取作者名称
+		author := "未知作者"
+		if moment.User != nil {
+			author = moment.User.Username
+		}
+
+		// 格式化创建时间
+		createTime := moment.CreatedAt.Format("2006-01-02 15:04")
+
+		item := gin.H{
+			"id":        moment.ID,
+			"title":     moment.Title,
+			"author":    author,
+			"imageUrl":  imageUrl,
+			"likeCount": moment.LikeCount,
+			"createTime": createTime,
+		}
+
+		convertedList = append(convertedList, item)
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"code":    200,
 		"message": "success",
 		"data": gin.H{
-			"list": list,
+			"list": convertedList,
 			"pagination": gin.H{
 				"page":     page,
 				"pageSize": pageSize,

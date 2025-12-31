@@ -180,6 +180,7 @@ func SetupRoutes(router *gin.Engine) {
 		// ========== 兼容旧的动态接口 ==========
 		moments := api.Group("/moments")
 		{
+			moments.GET("", handlers.GetMoments) // 获取动态列表
 			moments.POST("", handlers.CreateMoment)
 			moments.GET("/:id", handlers.GetMomentDetail)
 			moments.PATCH("/:id", handlers.UpdateMoment)
