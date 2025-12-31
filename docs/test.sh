@@ -137,7 +137,16 @@ extract_token() {
 extract_field() {
     local field=$1
     if [ -f "$RESPONSE_FILE" ]; then
-        grep -o "\"$field\":\"[^\"]*\"" "$RESPONSE_FILE" 2>/dev/null | cut -d'"' -f4
+        # 尝试从data对象中提取字段
+        grep -o "\"$field\":[^,}]*" "$RESPONSE_FILE" 2>/dev/null | head -n1 | sed 's/.*"'"$field"'":\([^,}]*\).*/\1/' | tr -d '"' | tr -d ' '
+    fi
+}
+
+# 提取数字ID字段（从data对象中）
+extract_id() {
+    if [ -f "$RESPONSE_FILE" ]; then
+        # 尝试从data对象中提取id字段（可能是数字）
+        grep -o '"data":{[^}]*"id":[0-9]*' "$RESPONSE_FILE" 2>/dev/null | grep -o '"id":[0-9]*' | cut -d':' -f2 | head -n1
     fi
 }
 
@@ -221,12 +230,22 @@ test_api "GET" "/api/moments?page=1&pageSize=10" "" "获取动态列表" true
 
 print_description "发布动态：用户发布新动态，支持标题、内容、标签、图片"
 MOMENT_DATA="{\"title\":\"测试动态标题\",\"content\":\"这是测试动态内容，用于验证发布功能\",\"tags\":[\"测试\",\"校园\"],\"images\":[]}"
-test_api "POST" "/api/moments" "$MOMENT_DATA" "发布动态" true
-
-# 获取刚发布的动态ID（如果可能）
-MOMENT_ID=$(extract_field "id" | head -n1)
-if [ -z "$MOMENT_ID" ]; then
-    MOMENT_ID=1  # 默认值
+if test_api "POST" "/api/moments" "$MOMENT_DATA" "发布动态" true; then
+    # 获取刚发布的动态ID
+    MOMENT_ID=$(extract_id)
+    if [ -z "$MOMENT_ID" ]; then
+        # 如果提取失败，尝试从响应中提取
+        MOMENT_ID=$(grep -o '"id":[0-9]*' "$RESPONSE_FILE" 2>/dev/null | head -n1 | cut -d':' -f2)
+    fi
+    if [ ! -z "$MOMENT_ID" ]; then
+        echo -e "${GREEN}📌 动态ID已提取: $MOMENT_ID${NC}"
+    else
+        echo -e "${YELLOW}⚠️  无法提取动态ID，使用默认值1${NC}"
+        MOMENT_ID=1
+    fi
+else
+    echo -e "${YELLOW}⚠️  发布动态失败，使用默认ID 1${NC}"
+    MOMENT_ID=1
 fi
 
 print_description "获取动态详情：获取单条动态的详细信息，包含图片、评论等"
@@ -258,9 +277,19 @@ COMMENT_DATA="{\"content\":\"这是一条测试评论\"}"
 test_api "POST" "/api/comments/post/$MOMENT_ID" "$COMMENT_DATA" "发布评论" true
 
 # 获取刚发布的评论ID
-COMMENT_ID=$(extract_field "id" | head -n1)
-if [ -z "$COMMENT_ID" ]; then
-    COMMENT_ID=1  # 默认值
+if [ ! -z "$MOMENT_ID" ] && [ "$MOMENT_ID" != "1" ]; then
+    COMMENT_ID=$(extract_id)
+    if [ -z "$COMMENT_ID" ]; then
+        COMMENT_ID=$(grep -o '"id":[0-9]*' "$RESPONSE_FILE" 2>/dev/null | head -n1 | cut -d':' -f2)
+    fi
+    if [ ! -z "$COMMENT_ID" ]; then
+        echo -e "${GREEN}📌 评论ID已提取: $COMMENT_ID${NC}"
+    else
+        echo -e "${YELLOW}⚠️  无法提取评论ID，使用默认值1${NC}"
+        COMMENT_ID=1
+    fi
+else
+    COMMENT_ID=1
 fi
 
 print_description "点赞评论：点赞或取消点赞评论"

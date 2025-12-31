@@ -9,9 +9,9 @@ import (
 
 // ToggleLikePost 点赞/取消点赞帖子
 func ToggleLikePost(postID int64, userID string) (bool, error) {
-	// 检查帖子是否存在
-	var post models.Post
-	if err := getDB().First(&post, "id = ? AND status = ?", postID, 0).Error; err != nil {
+	// 检查帖子是否存在（使用Moment模型，因为它映射到posts表）
+	var moment models.Moment
+	if err := getDB().First(&moment, "id = ? AND status = ?", postID, 0).Error; err != nil {
 		return false, err
 	}
 	
@@ -32,11 +32,11 @@ func ToggleLikePost(postID int64, userID string) (bool, error) {
 			return false, err
 		}
 		
-		// 更新帖子点赞数
-		getDB().Model(&post).Update("like_count", gorm.Expr("like_count + ?", 1))
+		// 更新帖子点赞数（使用Moment模型）
+		getDB().Model(&models.Moment{}).Where("id = ?", postID).Update("like_count", gorm.Expr("like_count + ?", 1))
 		
 		// 更新用户获赞数
-		getDB().Model(&models.User{}).Where("id = ?", post.UserID).Update("like_count", gorm.Expr("like_count + ?", 1))
+		getDB().Model(&models.User{}).Where("id = ?", moment.UserID).Update("like_count", gorm.Expr("like_count + ?", 1))
 		
 		// 更新帖子的点赞用户列表
 		updatePostLikedUsers(postID, userID, true)
@@ -48,11 +48,11 @@ func ToggleLikePost(postID int64, userID string) (bool, error) {
 			return false, err
 		}
 		
-		// 更新帖子点赞数
-		getDB().Model(&post).Update("like_count", gorm.Expr("GREATEST(like_count - ?, 0)", 1))
+		// 更新帖子点赞数（使用Moment模型）
+		getDB().Model(&models.Moment{}).Where("id = ?", postID).Update("like_count", gorm.Expr("GREATEST(like_count - ?, 0)", 1))
 		
 		// 更新用户获赞数
-		getDB().Model(&models.User{}).Where("id = ?", post.UserID).Update("like_count", gorm.Expr("GREATEST(like_count - ?, 0)", 1))
+		getDB().Model(&models.User{}).Where("id = ?", moment.UserID).Update("like_count", gorm.Expr("GREATEST(like_count - ?, 0)", 1))
 		
 		// 更新帖子的点赞用户列表
 		updatePostLikedUsers(postID, userID, false)
@@ -136,14 +136,14 @@ func GetUserLikes(userID, targetType string, page, pageSize int) ([]models.Like,
 
 // updatePostLikedUsers 更新帖子的点赞用户列表
 func updatePostLikedUsers(postID int64, userID string, isAdd bool) {
-	var post models.Post
-	if err := getDB().First(&post, "id = ?", postID).Error; err != nil {
+	var moment models.Moment
+	if err := getDB().First(&moment, "id = ?", postID).Error; err != nil {
 		return
 	}
 	
 	var likedUsers []string
-	if post.LikedUsers != nil {
-		json.Unmarshal(post.LikedUsers, &likedUsers)
+	if moment.LikedUsers != nil {
+		json.Unmarshal(moment.LikedUsers, &likedUsers)
 	}
 	
 	if isAdd {
@@ -170,5 +170,5 @@ func updatePostLikedUsers(postID int64, userID string, isAdd bool) {
 	}
 	
 	likedUsersJSON, _ := json.Marshal(likedUsers)
-	getDB().Model(&post).Update("liked_users", likedUsersJSON)
+	getDB().Model(&models.Moment{}).Where("id = ?", postID).Update("liked_users", likedUsersJSON)
 }
