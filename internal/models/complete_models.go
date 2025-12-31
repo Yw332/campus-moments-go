@@ -38,7 +38,8 @@ type Like struct {
 	CreatedAt  time.Time `json:"createdAt" gorm:"column:created_at;type:datetime"`
 
 	// 关联字段
-	User       *User     `json:"user,omitempty" gorm:"foreignKey:UserID"`
+	User *User `json:"user,omitempty" gorm:"foreignKey:UserID"`
+	Post *Post `json:"post,omitempty" gorm:"foreignKey:TargetID;references:ID"`
 }
 
 // 表名

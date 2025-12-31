@@ -111,37 +111,26 @@ func GetCommentLikes(commentID int64, page, pageSize int) ([]models.Like, int64,
 func GetUserLikes(userID, targetType string, page, pageSize int) ([]models.Like, int64, error) {
 	var likes []models.Like
 	var total int64
-	
+
 	offset := (page - 1) * pageSize
-	
+
 	query := getDB().Model(&models.Like{}).Where("user_id = ?", userID)
-	
+
 	if targetType != "" {
 		query = query.Where("target_type = ?", targetType)
 	}
-	
+
 	// 获取总数
 	query.Count(&total)
-	
-	// 获取点赞列表
+
+	// 获取点赞列表,预加载User和Post信息
 	err := query.Preload("User").
+		Preload("Post").
 		Order("created_at DESC").
 		Offset(offset).
 		Limit(pageSize).
 		Find(&likes).Error
-	
-	// 如果是帖子点赞，关联帖子信息
-	if targetType == "1" || targetType == "" {
-		for i := range likes {
-			if likes[i].TargetType == 1 {
-				var post models.Post
-				if err := getDB().First(&post, "id = ? AND status = ?", likes[i].TargetID, 0).Error; err == nil {
-					// 将帖子信息附加到点赞记录中（这里简化处理，实际可以通过自定义结构体返回）
-				}
-			}
-		}
-	}
-	
+
 	return likes, total, err
 }
 

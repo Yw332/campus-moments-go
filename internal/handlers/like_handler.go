@@ -126,7 +126,7 @@ func GetUserLikes(c *gin.Context) {
 	if targetUserID == "" {
 		targetUserID = c.GetString("userID")
 	}
-	
+
 	targetType := c.DefaultQuery("type", "1") // 默认获取帖子点赞
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "20"))
@@ -140,14 +140,55 @@ func GetUserLikes(c *gin.Context) {
 		})
 		return
 	}
-	
+
+	// 转换为响应格式,修正avatar字段名
+	convertedLikes := make([]map[string]interface{}, 0, len(likes))
+	for _, like := range likes {
+		likeData := map[string]interface{}{
+			"id":         like.ID,
+			"targetId":   like.TargetID,
+			"targetType": like.TargetType,
+			"createdAt":  like.CreatedAt,
+		}
+
+		// 添加用户信息,统一使用avatarUrl
+		if like.User.ID != "" {
+			likeData["user"] = map[string]interface{}{
+				"id":              like.User.ID,
+				"username":        like.User.Username,
+				"avatarUrl":       like.User.Avatar,
+				"avatarType":      like.User.AvatarType,
+				"avatarUpdatedAt": like.User.AvatarUpdatedAt,
+				"signature":       like.User.Signature,
+			}
+		}
+
+		// 如果是帖子点赞,添加帖子信息
+		if like.TargetType == 1 && like.Post.ID != 0 {
+			likeData["post"] = map[string]interface{}{
+				"id":          like.Post.ID,
+				"title":       like.Post.Title,
+				"content":     like.Post.Content,
+				"images":      like.Post.Images,
+				"video":       like.Post.Video,
+				"createdAt":   like.Post.CreatedAt,
+				"likeCount":   like.Post.LikeCount,
+				"commentCount": like.Post.CommentCount,
+				"viewCount":   like.Post.ViewCount,
+				"visibility":  like.Post.Visibility,
+			}
+		}
+
+		convertedLikes = append(convertedLikes, likeData)
+	}
+
 	c.JSON(http.StatusOK, gin.H{
 		"code": http.StatusOK,
 		"message":  "获取成功",
 		"data": gin.H{
-			"likes": likes,
-			"total": total,
-			"page":  page,
+			"likes":    convertedLikes,
+			"total":    total,
+			"page":     page,
 			"pageSize": pageSize,
 		},
 	})
