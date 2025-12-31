@@ -9,9 +9,9 @@ import (
 
 // CreateComment 创建评论
 func CreateComment(postID int64, userID, content string, replies []map[string]interface{}) (*models.Comment, error) {
-	// 检查帖子是否存在
-	var post models.Post
-	if err := getDB().First(&post, "id = ? AND status = ?", postID, 0).Error; err != nil {
+	// 检查帖子是否存在（使用Moment模型，因为它映射到posts表）
+	var moment models.Moment
+	if err := getDB().First(&moment, "id = ? AND status = ?", postID, 0).Error; err != nil {
 		return nil, err
 	}
 	
@@ -20,7 +20,7 @@ func CreateComment(postID int64, userID, content string, replies []map[string]in
 		UserID:    userID,
 		Content:   content,
 		Status:    0, // 正常状态
-		IsAuthor:  userID == post.UserID, // 检查是否为作者
+		IsAuthor:  userID == moment.UserID, // 检查是否为作者
 		CreatedAt: time.Now(),
 		UpdatedAt: time.Now(),
 	}
@@ -42,8 +42,8 @@ func CreateComment(postID int64, userID, content string, replies []map[string]in
 		comment.User = &user
 	}
 	
-	// 更新帖子评论数
-	getDB().Model(&models.Post{}).Where("id = ?", postID).Update("comment_count", gorm.Expr("comment_count + ?", 1))
+	// 更新帖子评论数（使用Moment模型）
+	getDB().Model(&models.Moment{}).Where("id = ?", postID).Update("comment_count", gorm.Expr("comment_count + ?", 1))
 	
 	// 更新用户评论数
 	getDB().Model(&models.User{}).Where("id = ?", userID).Update("comment_count", gorm.Expr("comment_count + ?", 1))
@@ -63,14 +63,26 @@ func GetCommentList(postID int64, page, pageSize int) ([]models.Comment, int64, 
 	// 获取总数
 	query.Count(&total)
 	
-	// 获取评论列表
-	err := query.Preload("User").
+	// 获取评论列表（不使用Preload，因为User字段标记为gorm:"-"，需要手动加载）
+	err := query.
 		Order("created_at ASC").
 		Offset(offset).
 		Limit(pageSize).
 		Find(&comments).Error
 	
-	return comments, total, err
+	if err != nil {
+		return comments, total, err
+	}
+	
+	// 手动加载用户信息
+	for i := range comments {
+		var user models.User
+		if err := getDB().First(&user, "id = ?", comments[i].UserID).Error; err == nil {
+			comments[i].User = &user
+		}
+	}
+	
+	return comments, total, nil
 }
 
 // UpdateComment 更新评论
@@ -91,8 +103,11 @@ func UpdateComment(commentID int64, userID, content string) (*models.Comment, er
 		return nil, err
 	}
 	
-	// 重新加载用户信息
-	getDB().Preload("User").First(&comment, commentID)
+	// 手动加载用户信息
+	var user models.User
+	if err := getDB().First(&user, "id = ?", comment.UserID).Error; err == nil {
+		comment.User = &user
+	}
 	
 	return &comment, nil
 }
@@ -115,8 +130,8 @@ func DeleteComment(commentID int64, userID string) error {
 	// 获取评论信息用于更新计数
 	var comment models.Comment
 	if err := getDB().First(&comment, "id = ?", commentID).Error; err == nil {
-		// 更新帖子评论数
-		getDB().Model(&models.Post{}).Where("id = ?", comment.PostID).Update("comment_count", gorm.Expr("GREATEST(comment_count - ?, 0)", 1))
+		// 更新帖子评论数（使用Moment模型）
+		getDB().Model(&models.Moment{}).Where("id = ?", comment.PostID).Update("comment_count", gorm.Expr("GREATEST(comment_count - ?, 0)", 1))
 
 		// 更新用户评论数
 		getDB().Model(&models.User{}).Where("id = ?", userID).Update("comment_count", gorm.Expr("GREATEST(comment_count - ?, 0)", 1))
@@ -141,8 +156,8 @@ func AdminDeleteComment(commentID int64) (*models.Comment, error) {
 		return nil, err
 	}
 
-	// 更新帖子评论数
-	getDB().Model(&models.Post{}).Where("id = ?", comment.PostID).Update("comment_count", gorm.Expr("GREATEST(comment_count - ?, 0)", 1))
+	// 更新帖子评论数（使用Moment模型）
+	getDB().Model(&models.Moment{}).Where("id = ?", comment.PostID).Update("comment_count", gorm.Expr("GREATEST(comment_count - ?, 0)", 1))
 
 	// 更新用户评论数
 	getDB().Model(&models.User{}).Where("id = ?", comment.UserID).Update("comment_count", gorm.Expr("GREATEST(comment_count - ?, 0)", 1))
@@ -247,8 +262,8 @@ func ReplyComment(commentID int64, userID, content string) (*models.Comment, err
 		reply.User = &user
 	}
 	
-	// 更新帖子评论数
-	getDB().Model(&models.Post{}).Where("id = ?", parentComment.PostID).Update("comment_count", gorm.Expr("comment_count + ?", 1))
+	// 更新帖子评论数（使用Moment模型）
+	getDB().Model(&models.Moment{}).Where("id = ?", parentComment.PostID).Update("comment_count", gorm.Expr("comment_count + ?", 1))
 	
 	// 更新用户评论数
 	getDB().Model(&models.User{}).Where("id = ?", userID).Update("comment_count", gorm.Expr("comment_count + ?", 1))

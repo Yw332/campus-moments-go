@@ -26,10 +26,12 @@ func (s *MomentService) getDB() *gorm.DB {
 
 // CreateMomentRequest 创建动态请求
 type CreateMomentRequest struct {
+	Title      string                  `json:"title"`       // 标题（可选）
 	Content    string                  `json:"content" binding:"required"`
 	Tags       []string                `json:"tags"`
-	Media      []models.MediaItem      `json:"media"`
-	Visibility int                     `json:"visibility"` // 0公开/1好友/2私密
+	Images     []string                `json:"images"`      // 图片URL数组（前端格式）
+	Media      []models.MediaItem      `json:"media"`       // 媒体项（后端格式）
+	Visibility int                     `json:"visibility"`  // 0公开/1好友/2私密
 }
 
 // UpdateMomentRequest 更新动态请求
@@ -50,9 +52,29 @@ func (s *MomentService) CreateMoment(userID string, req *CreateMomentRequest) (*
 	// 转换Tags到JSON格式
 	tagsJSON, _ := json.Marshal(models.Tags(req.Tags))
 
+	// 处理图片：优先使用Images数组，如果没有则从Media中提取
+	var imagesJSON json.RawMessage
+	if len(req.Images) > 0 {
+		// 使用前端传来的Images数组
+		imagesJSON, _ = json.Marshal(req.Images)
+	} else if len(req.Media) > 0 {
+		// 从Media中提取图片URL
+		var imageURLs []string
+		for _, media := range req.Media {
+			if media.Type == "image" {
+				imageURLs = append(imageURLs, media.URL)
+			}
+		}
+		if len(imageURLs) > 0 {
+			imagesJSON, _ = json.Marshal(imageURLs)
+		}
+	}
+
 	moment := &models.Moment{
 		UserID:     userID,
+		Title:      req.Title,
 		Content:    req.Content,
+		Images:     imagesJSON,
 		Tags:       tagsJSON,
 		Visibility: req.Visibility,
 		LikeCount:  0,
