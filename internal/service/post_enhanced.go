@@ -53,7 +53,7 @@ func ConvertToPostResponse(post models.Post) PostResponse {
 	// 处理用户信息
 	if post.User != nil {
 		response.Username = post.User.Username
-		response.Avatar = post.User.Avatar
+		response.Avatar = post.User.AvatarURL
 	}
 	
 	return response

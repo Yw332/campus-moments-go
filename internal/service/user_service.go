@@ -66,7 +66,7 @@ func (s *UserService) GetPublicUserInfo(userID string) (*PublicUserInfo, error) 
 	return &PublicUserInfo{
 		ID:              user.ID,
 		Username:        user.Username,
-		Avatar:          user.Avatar,
+		Avatar:          user.AvatarURL,
 		AvatarType:      user.AvatarType,
 		AvatarUpdatedAt: user.AvatarUpdatedAt,
 		PostCount:       user.PostCount,
@@ -233,7 +233,7 @@ func (s *UserService) SearchUsers(keyword string, page, pageSize int) ([]PublicU
 		result[i] = PublicUserInfo{
 			ID:              user.ID,
 			Username:        user.Username,
-			Avatar:          user.Avatar,
+			Avatar:          user.AvatarURL,
 			AvatarType:      user.AvatarType,
 			AvatarUpdatedAt: user.AvatarUpdatedAt,
 			PostCount:       user.PostCount,
