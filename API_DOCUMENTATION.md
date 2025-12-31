@@ -211,7 +211,7 @@ Authorization: Bearer <your_token>
     "userId": 4,
     "username": "Yw166332",
     "phone": "17875242005",
-    "avatarUrl": "",
+    "avatar": "",
     "signature": "",
     "wechatNickname": ""
   }
@@ -350,10 +350,10 @@ Authorization: Bearer <your_token>
 **成功响应**：
 ```json
 {
-  "code": 201,
-  "message": "发布成功",
+  "code": 200,
+  "message": "创建成功",
   "data": {
-    "postId": 1,
+    "id": 1,
     "title": "标题",
     "content": "内容"
   }
@@ -742,7 +742,7 @@ Authorization: Bearer <your_token>
 **请求参数**：
 ```json
 {
-  "newPassword": "newpassword123"
+  "password": "newpassword123"
 }
 ```
 

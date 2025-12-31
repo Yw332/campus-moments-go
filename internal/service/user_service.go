@@ -31,7 +31,7 @@ type UpdateProfileRequest struct {
 type PublicUserInfo struct {
 	ID              string     `json:"id"`
 	Username        string     `json:"username"`
-	Avatar          string     `json:"avatarUrl"`
+	Avatar          string     `json:"avatar"`
 	AvatarType      int        `json:"avatarType"`
 	AvatarUpdatedAt *time.Time `json:"avatarUpdatedAt"`
 	PostCount       int        `json:"postCount"`

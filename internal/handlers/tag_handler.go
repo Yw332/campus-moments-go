@@ -28,7 +28,7 @@ func CreateTag(c *gin.Context) {
 	}
 	
 	c.JSON(http.StatusCreated, gin.H{
-		"code": http.StatusCreated,
+		"code": 200,
 		"message":  "创建成功",
 		"data": tag,
 	})

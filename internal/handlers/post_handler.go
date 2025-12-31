@@ -41,16 +41,7 @@ func CreatePost(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{
 		"code":    200,
 		"message": "创建成功",
-		"data": gin.H{
-			"postId":    post.ID,
-			"title":     post.Title,
-			"content":   post.Content,
-			"images":    post.Images,
-			"video":     post.Video,
-			"tags":      post.Tags,
-			"visibility": post.Visibility,
-			"createdAt": post.CreatedAt,
-		},
+		"data":    post,
 	})
 }
 
