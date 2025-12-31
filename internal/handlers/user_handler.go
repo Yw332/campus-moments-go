@@ -208,7 +208,7 @@ func AdminResetUserPassword(c *gin.Context) {
 	}
 
 	var req struct {
-		NewPassword string `json:"newPassword" binding:"required,min=6"`
+		Password string `json:"password" binding:"required,min=6"`
 	}
 
 	if err := c.ShouldBindJSON(&req); err != nil {
@@ -220,7 +220,7 @@ func AdminResetUserPassword(c *gin.Context) {
 		return
 	}
 
-	if err := userService.ResetUserPassword(targetUserID, req.NewPassword); err != nil {
+	if err := userService.ResetUserPassword(targetUserID, req.Password); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"code":    400,
 			"message": err.Error(),
