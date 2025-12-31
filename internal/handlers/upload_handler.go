@@ -93,7 +93,7 @@ func UploadFile(c *gin.Context) {
 	fileUrl := fmt.Sprintf("http://106.52.165.122:8080/static/files/%s", newFilename)
 	
 	c.JSON(http.StatusOK, gin.H{
-		"code":    0,
+		"code":    200,
 		"message": "文件上传成功",
 		"data": gin.H{
 			"fileId":   uuid[:16],
@@ -178,7 +178,7 @@ func UploadAvatar(c *gin.Context) {
 	avatarUrl := fmt.Sprintf("http://106.52.165.122:8080/static/avatars/%s", newFilename)
 	
 	c.JSON(http.StatusOK, gin.H{
-		"code":    0,
+		"code":    200,
 		"message": "头像上传成功",
 		"data": gin.H{
 			"avatarUrl": avatarUrl,

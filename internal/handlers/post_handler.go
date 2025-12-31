@@ -39,7 +39,7 @@ func CreatePost(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusCreated, gin.H{
-		"code":    201,
+		"code":    200,
 		"message": "创建成功",
 		"data":    post,
 	})

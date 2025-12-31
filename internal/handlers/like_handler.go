@@ -11,16 +11,24 @@ import (
 func LikePost(c *gin.Context) {
 	postID, err := strconv.ParseInt(c.Param("postId"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的帖子ID"})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    http.StatusBadRequest,
+			"message": "无效的帖子ID",
+			"data":    nil,
+		})
 		return
 	}
-	
+
 	userID := c.GetString("userID")
 	liked, err := service.ToggleLikePost(postID, userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "操作失败: " + err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"code":    http.StatusInternalServerError,
+			"message": "操作失败: " + err.Error(),
+			"data":    nil,
+		})
 		return
-	}
+	}tijiaodao1
 	
 	var msg string
 	if liked {
@@ -42,16 +50,24 @@ func LikePost(c *gin.Context) {
 func GetPostLikes(c *gin.Context) {
 	postID, err := strconv.ParseInt(c.Param("postId"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的帖子ID"})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    http.StatusBadRequest,
+			"message": "无效的帖子ID",
+			"data":    nil,
+		})
 		return
 	}
-	
+
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "20"))
-	
+
 	likes, total, err := service.GetPostLikes(postID, page, pageSize)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "获取失败: " + err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"code":    http.StatusInternalServerError,
+			"message": "获取失败: " + err.Error(),
+			"data":    nil,
+		})
 		return
 	}
 	
@@ -71,16 +87,24 @@ func GetPostLikes(c *gin.Context) {
 func GetCommentLikes(c *gin.Context) {
 	commentID, err := strconv.ParseInt(c.Param("commentId"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的评论ID"})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    http.StatusBadRequest,
+			"message": "无效的评论ID",
+			"data":    nil,
+		})
 		return
 	}
-	
+
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "20"))
-	
+
 	likes, total, err := service.GetCommentLikes(commentID, page, pageSize)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "获取失败: " + err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"code":    http.StatusInternalServerError,
+			"message": "获取失败: " + err.Error(),
+			"data":    nil,
+		})
 		return
 	}
 	
@@ -106,10 +130,14 @@ func GetUserLikes(c *gin.Context) {
 	targetType := c.DefaultQuery("type", "1") // 默认获取帖子点赞
 	page, _ := strconv.Atoi(c.DefaultQuery("page", "1"))
 	pageSize, _ := strconv.Atoi(c.DefaultQuery("pageSize", "20"))
-	
+
 	likes, total, err := service.GetUserLikes(targetUserID, targetType, page, pageSize)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "获取失败: " + err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"code":    http.StatusInternalServerError,
+			"message": "获取失败: " + err.Error(),
+			"data":    nil,
+		})
 		return
 	}
 	

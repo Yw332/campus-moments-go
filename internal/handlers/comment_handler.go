@@ -25,7 +25,11 @@ func getPostID(c *gin.Context) (int64, error) {
 func CreateComment(c *gin.Context) {
 	postID, err := getPostID(c)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的帖子ID"})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    http.StatusBadRequest,
+			"message": "无效的帖子ID",
+			"data":    nil,
+		})
 		return
 	}
 	
@@ -35,14 +39,22 @@ func CreateComment(c *gin.Context) {
 	}
 	
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "参数错误: " + err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    http.StatusBadRequest,
+			"message": "参数错误: " + err.Error(),
+			"data":    nil,
+		})
 		return
 	}
 	
 	userID := c.GetString("userID")
 	comment, err := service.CreateComment(postID, userID, req.Content, req.Replies)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "创建失败: " + err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"code":    http.StatusInternalServerError,
+			"message": "创建失败: " + err.Error(),
+			"data":    nil,
+		})
 		return
 	}
 	
@@ -57,7 +69,11 @@ func CreateComment(c *gin.Context) {
 func GetCommentList(c *gin.Context) {
 	postID, err := getPostID(c)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的帖子ID"})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    http.StatusBadRequest,
+			"message": "无效的帖子ID",
+			"data":    nil,
+		})
 		return
 	}
 	
@@ -66,7 +82,11 @@ func GetCommentList(c *gin.Context) {
 	
 	comments, total, err := service.GetCommentList(postID, page, pageSize)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "获取失败: " + err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"code":    http.StatusInternalServerError,
+			"message": "获取失败: " + err.Error(),
+			"data":    nil,
+		})
 		return
 	}
 	
@@ -86,7 +106,11 @@ func GetCommentList(c *gin.Context) {
 func UpdateComment(c *gin.Context) {
 	commentID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的评论ID"})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    http.StatusBadRequest,
+			"message": "无效的评论ID",
+			"data":    nil,
+		})
 		return
 	}
 	
@@ -95,14 +119,22 @@ func UpdateComment(c *gin.Context) {
 	}
 	
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "参数错误: " + err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    http.StatusBadRequest,
+			"message": "参数错误: " + err.Error(),
+			"data":    nil,
+		})
 		return
 	}
 	
 	userID := c.GetString("userID")
 	comment, err := service.UpdateComment(commentID, userID, req.Content)
 	if err != nil {
-		c.JSON(http.StatusForbidden, gin.H{"error": "更新失败: " + err.Error()})
+		c.JSON(http.StatusForbidden, gin.H{
+			"code":    http.StatusForbidden,
+			"message": "更新失败: " + err.Error(),
+			"data":    nil,
+		})
 		return
 	}
 	
@@ -117,14 +149,22 @@ func UpdateComment(c *gin.Context) {
 func DeleteComment(c *gin.Context) {
 	commentID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的评论ID"})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    http.StatusBadRequest,
+			"message": "无效的评论ID",
+			"data":    nil,
+		})
 		return
 	}
 	
 	userID := c.GetString("userID")
 	err = service.DeleteComment(commentID, userID)
 	if err != nil {
-		c.JSON(http.StatusForbidden, gin.H{"error": "删除失败: " + err.Error()})
+		c.JSON(http.StatusForbidden, gin.H{
+			"code":    http.StatusForbidden,
+			"message": "删除失败: " + err.Error(),
+			"data":    nil,
+		})
 		return
 	}
 	
@@ -138,14 +178,22 @@ func DeleteComment(c *gin.Context) {
 func LikeComment(c *gin.Context) {
 	commentID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的评论ID"})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    http.StatusBadRequest,
+			"message": "无效的评论ID",
+			"data":    nil,
+		})
 		return
 	}
 	
 	userID := c.GetString("userID")
 	liked, err := service.ToggleLikeComment(commentID, userID)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "操作失败: " + err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"code":    http.StatusInternalServerError,
+			"message": "操作失败: " + err.Error(),
+			"data":    nil,
+		})
 		return
 	}
 	
@@ -169,7 +217,11 @@ func LikeComment(c *gin.Context) {
 func ReplyComment(c *gin.Context) {
 	commentID, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "无效的评论ID"})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    http.StatusBadRequest,
+			"message": "无效的评论ID",
+			"data":    nil,
+		})
 		return
 	}
 	
@@ -178,14 +230,22 @@ func ReplyComment(c *gin.Context) {
 	}
 	
 	if err := c.ShouldBindJSON(&req); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "参数错误: " + err.Error()})
+		c.JSON(http.StatusBadRequest, gin.H{
+			"code":    http.StatusBadRequest,
+			"message": "参数错误: " + err.Error(),
+			"data":    nil,
+		})
 		return
 	}
 	
 	userID := c.GetString("userID")
 	comment, err := service.ReplyComment(commentID, userID, req.Content)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "回复失败: " + err.Error()})
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"code":    http.StatusInternalServerError,
+			"message": "回复失败: " + err.Error(),
+			"data":    nil,
+		})
 		return
 	}
 	
