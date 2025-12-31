@@ -20,8 +20,8 @@ type Comment struct {
 	UpdatedAt     time.Time     `json:"updatedAt" gorm:"column:updated_at;type:datetime"`
 
 	// 关联字段（不设置外键约束）
-	User          *User         `json:"user,omitempty"`
-	Post          *Post         `json:"post,omitempty"`
+	User          *User         `json:"user,omitempty" gorm:"-"`
+	Post          *Post         `json:"post,omitempty" gorm:"-"`
 }
 
 // 表名
@@ -38,8 +38,8 @@ type Like struct {
 	CreatedAt  time.Time `json:"createdAt" gorm:"column:created_at;type:datetime"`
 
 	// 关联字段（不设置外键约束）
-	User *User `json:"user,omitempty"`
-	Post *Post `json:"post,omitempty"`
+	User *User `json:"user,omitempty" gorm:"-"`
+	Post *Post `json:"post,omitempty" gorm:"-"`
 }
 
 // 表名
@@ -63,8 +63,8 @@ type Message struct {
 	CreatedAt      time.Time `json:"createdAt" gorm:"column:created_at;type:datetime"`
 
 	// 关联字段（不设置外键约束）
-	Sender         *User     `json:"sender,omitempty"`
-	Receiver       *User     `json:"receiver,omitempty"`
+	Sender         *User     `json:"sender,omitempty" gorm:"-"`
+	Receiver       *User     `json:"receiver,omitempty" gorm:"-"`
 }
 
 // 表名
@@ -85,9 +85,9 @@ type Conversation struct {
 	UpdatedAt       time.Time  `json:"updatedAt" gorm:"column:updated_at;type:datetime"`
 
 	// 关联字段（不设置外键约束）
-	User            *User      `json:"user,omitempty"`
-	Peer            *User      `json:"peer,omitempty"`
-	LastMessage     *Message   `json:"lastMessage,omitempty"`
+	User            *User      `json:"user,omitempty" gorm:"-"`
+	Peer            *User      `json:"peer,omitempty" gorm:"-"`
+	LastMessage     *Message   `json:"lastMessage,omitempty" gorm:"-"`
 }
 
 // 表名
@@ -107,8 +107,8 @@ type FriendRelation struct {
 	UpdatedAt    time.Time  `json:"updatedAt" gorm:"column:updated_at;type:datetime"`
 
 	// 关联字段（不设置外键约束）
-	User         *User      `json:"user,omitempty"`
-	Friend       *User      `json:"friend,omitempty"`
+	User         *User      `json:"user,omitempty" gorm:"-"`
+	Friend       *User      `json:"friend,omitempty" gorm:"-"`
 }
 
 // 表名
@@ -128,8 +128,8 @@ type FriendRequest struct {
 	UpdatedAt  time.Time  `json:"updatedAt" gorm:"column:updated_at;type:datetime"`
 
 	// 关联字段（不设置外键约束）
-	FromUser   *User      `json:"fromUser,omitempty"`
-	ToUser     *User      `json:"toUser,omitempty"`
+	FromUser   *User      `json:"fromUser,omitempty" gorm:"-"`
+	ToUser     *User      `json:"toUser,omitempty" gorm:"-"`
 }
 
 // 表名
@@ -177,7 +177,7 @@ type Post struct {
 	UpdatedAt       time.Time       `json:"updatedAt" gorm:"column:updated_at;type:datetime"`
 	
 	// 关联字段（不设置外键约束）
-	User            *User           `json:"user,omitempty"`
+	User            *User           `json:"user,omitempty" gorm:"-"`
 }
 
 // 表名
